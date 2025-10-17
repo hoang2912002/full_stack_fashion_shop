@@ -6,7 +6,6 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -22,46 +21,29 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "products")
+@Table(name = "option_values")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
+public class OptionValue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    private String name;
+    private String value;
     private String slug;
 
-    private Double price;
-    private String thumbnail;
-    private Integer quantity;
-    
-    @Column(columnDefinition = "MEDIUMTEXT")
-    private String description;
-
     private boolean activated;
-
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
 
-    @ManyToOne()
-    @JoinColumn(name = "manufacture_id")
-    private Manufacture manufacture;
-
-    @ManyToOne()
-    @JoinColumn(name = "category_id")
-    private Category category;
-
-    @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
-    @JsonIgnore
-    List<ProductSku> productSkus;
-
-    @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany( mappedBy = "optionValue", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore
     List<Variant> variants;
+
+    @ManyToOne()
+    @JoinColumn(name = "option_id")
+    private Option option;
 }

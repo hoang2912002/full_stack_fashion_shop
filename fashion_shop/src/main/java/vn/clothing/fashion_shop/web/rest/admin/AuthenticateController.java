@@ -3,6 +3,7 @@ package vn.clothing.fashion_shop.web.rest.admin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import vn.clothing.fashion_shop.constants.ApiResponse;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.User;
@@ -61,7 +62,7 @@ public class AuthenticateController {
     @PostMapping("/login")
     @ApiMessageResponse("Đăng nhập thành công")
     public ResponseEntity<ResponseLoginDTO> login (
-        @RequestBody LoginDTO loginDTO
+        @RequestBody @Valid LoginDTO loginDTO
     ) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
             loginDTO.getUsername(),
@@ -120,9 +121,9 @@ public class AuthenticateController {
         @CookieValue(name = "refresh_token", defaultValue = "") String refresh_token
     ) {
         Jwt token = this.securityUtils.getUserFromJWTToken(refresh_token);
-        if(token.getExpiresAt().isBefore(Instant.now())){
-            throw new RuntimeException("Hết hạn đăng nhập, vui lòng đăng nhập lại");
-        }
+        // if(token.getExpiresAt().isBefore(Instant.now())){
+        //     throw new RuntimeException("Hết hạn đăng nhập, vui lòng đăng nhập lại");
+        // }
         String email = token.getSubject();
         User currentUser = this.userService.handleGetUserByEmail(email);
         if(currentUser == null){

@@ -19,12 +19,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.clothing.fashion_shop.constants.GenderEnum;
+import vn.clothing.fashion_shop.security.SecurityUtils;
 
 @Entity
 @Table(name = "users")
@@ -65,4 +68,16 @@ public class User {
     @ManyToOne()
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @PrePersist
+    public void handleSetCreatedUser(){
+        this.setCreatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
+        this.setCreatedAt(Instant.now());
+    } 
+
+    @PreUpdate
+    public void handleSetUpdatedUser(){
+        this.setUpdatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
+        this.setUpdatedAt(Instant.now());
+    } 
 }

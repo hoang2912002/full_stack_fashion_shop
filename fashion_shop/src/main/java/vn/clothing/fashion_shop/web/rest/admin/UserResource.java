@@ -3,6 +3,7 @@ package vn.clothing.fashion_shop.web.rest.admin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import vn.clothing.fashion_shop.constants.annotation.SkipWrapResponse;
 import vn.clothing.fashion_shop.domain.User;
 import vn.clothing.fashion_shop.service.UserService;
 

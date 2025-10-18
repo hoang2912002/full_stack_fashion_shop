@@ -28,6 +28,14 @@ public class ResponseLoginDTO<T> {
 
     @Getter
     @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public class UserGetAccount{
+        private ResponseUserData user;
+    }
+
+    @Getter
+    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UserInsideToken {

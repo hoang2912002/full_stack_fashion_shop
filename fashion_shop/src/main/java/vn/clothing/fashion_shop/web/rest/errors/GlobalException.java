@@ -7,18 +7,20 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import vn.clothing.fashion_shop.constants.ApiResponse;
+
 @RestControllerAdvice
 public class GlobalException {
     @ExceptionHandler(value = {
             UsernameNotFoundException.class,
             BadCredentialsException.class,
-            RuntimeException.class
+            RuntimeException.class,
+            UsernameNotFoundException.class
     })
-    public ResponseEntity<Object> handleAllException(Exception ex) {
-        Object res = new Object();
-        // res.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        // res.setMessage(ex.getMessage());
-        // res.setError("Internal Server Error");
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    public ResponseEntity<ApiResponse> handleAllException(Exception ex) {
+        ApiResponse res = new ApiResponse<>();
+        res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        res.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
     }
 }

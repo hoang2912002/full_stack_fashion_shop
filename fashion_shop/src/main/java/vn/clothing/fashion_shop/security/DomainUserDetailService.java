@@ -25,13 +25,13 @@ public class DomainUserDetailService implements UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username){
         User user = this.userService.handleGetUserByEmail(username);
         if(user == null){
-            throw new UsernameNotFoundException("Tài khoản/mật khẩu không hợp lệ");
+            throw new RuntimeException("Tài khoản/mật khẩu không hợp lệ");
         }
         if (!user.isActivated()) {
-            throw new UsernameNotFoundException("Tài khoản " + username + " không được actived");
+            throw new RuntimeException("Tài khoản " + username + " không được actived");
         }
         String role = "USER";
         if(user.getRole() instanceof Role){

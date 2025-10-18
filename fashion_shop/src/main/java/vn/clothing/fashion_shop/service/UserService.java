@@ -8,11 +8,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import vn.clothing.fashion_shop.domain.Address;
 import vn.clothing.fashion_shop.domain.Role;
 import vn.clothing.fashion_shop.domain.User;
 import vn.clothing.fashion_shop.repository.UserRepository;
 import vn.clothing.fashion_shop.web.rest.DTO.user.CreateUserDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.user.GetUserDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.user.UpdateUserDTO;
 
 @Service
 public class UserService {
@@ -20,39 +23,39 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final RoleService roleService;
     private final AddressService addressService;
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,RoleService roleService, AddressService addressService) {
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleService roleService,
+            AddressService addressService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleService = roleService;
         this.addressService = addressService;
     }
 
-    public User handleGetUserByEmail(String email){
+    public User handleGetUserByEmail(String email) {
         Optional<User> user = this.userRepository.findByEmail(email);
         return user.isPresent() && user != null ? user.get() : null;
     }
 
-    public CreateUserDTO createUser(User user){
+    public CreateUserDTO createUser(User user) {
         User checkUser = handleGetUserByEmail(user.getEmail());
-        if(checkUser != null || checkUser instanceof User){
+        if (checkUser != null || checkUser instanceof User) {
             throw new RuntimeException("Người dùng với email: " + user.getEmail() + " đã tồn tại");
         }
         Role role = new Role();
         List<Address> addresses = new ArrayList<>();
-        if(user.getRole() != null){
+        if (user.getRole() != null) {
             role = this.roleService.handleGetRoleById(user.getRole().getId());
         }
 
-        if(user.getAddresses() != null && user.getAddresses().size() > 0){
+        if (user.getAddresses() != null && user.getAddresses().size() > 0) {
             addresses = user.getAddresses().stream().map(
-                a -> {
-                    Address address = new Address();
-                    BeanUtils.copyProperties(a, address);
-                    return address;
-                }
-            ).toList();
-        }
-        else{
+                    a -> {
+                        Address address = new Address();
+                        BeanUtils.copyProperties(a, address);
+                        return address;
+                    }).toList();
+        } else {
             role = null;
         }
         User userForCreate = new User();
@@ -62,7 +65,7 @@ public class UserService {
         userForCreate.setPassword(this.passwordEncoder.encode(user.getPassword()));
         User userAfterCreate = this.userRepository.save(userForCreate);
         CreateUserDTO createUserDTO = new CreateUserDTO();
-        CreateUserDTO.InnerRoleDTO roleDTO =  createUserDTO.new InnerRoleDTO();
+        CreateUserDTO.InnerRoleDTO roleDTO = createUserDTO.new InnerRoleDTO();
         BeanUtils.copyProperties(userAfterCreate, createUserDTO);
         BeanUtils.copyProperties(role == null ? new Role() : role, roleDTO);
         createUserDTO.setRole(roleDTO);
@@ -70,12 +73,80 @@ public class UserService {
 
     }
 
-    public User updateRefreshTokenUserByEmail(String refresh_token, String email){
+    public User updateRefreshTokenUserByEmail(String refresh_token, String email) {
         User user = handleGetUserByEmail(email);
-        if(user == null){
+        if (user == null) {
             throw new RuntimeException("Người dùng với email: " + email + " đã tồn tại");
         }
         user.setRefreshToken(refresh_token);
         return this.userRepository.save(user);
+    }
+
+    public User findRawUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với id: " + id));
+    }
+
+    public GetUserDTO getUserById(Long id){
+        User user = findRawUserById(id);
+        GetUserDTO userDTO = new GetUserDTO();
+        GetUserDTO.InnerRoleDTO roleDTO = userDTO. new InnerRoleDTO();
+        BeanUtils.copyProperties(user, userDTO);
+        if(user.getRole() != null ){
+            BeanUtils.copyProperties(user.getRole(), roleDTO);
+        }
+        userDTO.setRole(roleDTO);
+        return userDTO;
+    }
+
+    public UpdateUserDTO updateUser(
+            User user) {
+        User updateUser = findRawUserById(user.getId());
+        updateUser.setAge(user.getAge());
+        updateUser.setAvatar(user.getAvatar());
+        updateUser.setFullName(user.getFullName());
+        Role role = null;
+        List<Address> addresses = new ArrayList<>();
+        UpdateUserDTO updateUserDTO = new UpdateUserDTO();
+        List<UpdateUserDTO.InnerAddressDTO> addressesDTO = new ArrayList<>();
+        UpdateUserDTO.InnerRoleDTO roleDTO = updateUserDTO.new InnerRoleDTO();
+        if (user.getRole() != null) {
+            role = this.roleService.handleGetRoleById(user.getRole().getId());
+        }
+        for (Address addr : user.getAddresses()) {
+            Address currentAddress;
+            if (addr.getId() != null) {
+                // ✅ Address cũ => update
+                currentAddress = this.addressService.getRawAddressById(addr.getId());
+                currentAddress.setAddress(addr.getAddress());
+                currentAddress.setCity(addr.getCity());
+                currentAddress.setDistrict(addr.getDistrict());
+                currentAddress.setWard(addr.getWard());
+            } else {
+                // ✅ Address mới => insert
+                currentAddress = new Address();
+                currentAddress.setAddress(addr.getAddress());
+                currentAddress.setCity(addr.getCity());
+                currentAddress.setDistrict(addr.getDistrict());
+                currentAddress.setWard(addr.getWard());
+                currentAddress.setUser(updateUser); // gán quan hệ
+            }
+            currentAddress.setActivated(true);
+            currentAddress.setUser(updateUser);
+            currentAddress= this.addressService.saveAddress(currentAddress);
+            addresses.add(currentAddress);
+            addressesDTO.add(updateUserDTO.new InnerAddressDTO(currentAddress.getId(),currentAddress.getAddress(),currentAddress.getCity(),currentAddress.getDistrict(),currentAddress.getWard()));
+        }
+
+        updateUser.setRole(role);
+        // updateUser.setAddresses(addresses);
+        updateUser = this.userRepository.saveAndFlush(updateUser);
+        
+        BeanUtils.copyProperties(updateUser, updateUserDTO);
+        BeanUtils.copyProperties(role != null ? role : roleDTO, roleDTO);
+        updateUserDTO.setRole(roleDTO);
+        updateUserDTO.setAddresses(addressesDTO);
+        return updateUserDTO;
+
     }
 }

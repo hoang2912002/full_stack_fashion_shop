@@ -8,6 +8,8 @@ import vn.clothing.fashion_shop.constants.annotation.SkipWrapResponse;
 import vn.clothing.fashion_shop.domain.User;
 import vn.clothing.fashion_shop.service.UserService;
 import vn.clothing.fashion_shop.web.rest.DTO.user.CreateUserDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.user.GetUserDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.user.UpdateUserDTO;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,10 +43,19 @@ public class UserController {
     
     @PutMapping("")
     @ApiMessageResponse("Cập nhật người dùng thành công")
-    public ResponseEntity<User> updateUser(
+    public ResponseEntity<UpdateUserDTO> updateUser(
         @RequestBody User user
     ) {
-
-        return ResponseEntity.ok(null);
+        UpdateUserDTO updateUserDTO = this.userService.updateUser(user);
+        return ResponseEntity.ok(updateUserDTO);
     }
+
+    @GetMapping("/{id}")
+    @ApiMessageResponse("Lấy user theo id thành công")
+    public ResponseEntity<GetUserDTO> getUserById(
+        @PathVariable("id") Long id
+    ) {
+        return ResponseEntity.ok(this.userService.getUserById(id));
+    }
+    
 }

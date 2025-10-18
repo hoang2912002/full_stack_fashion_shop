@@ -25,7 +25,7 @@ java {
 repositories {
 	mavenCentral()
 }
-
+extra["snippetsDir"] = file("build/generated-snippets")
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -49,4 +49,10 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+tasks.withType<Test> {
+    jvmArgs("--add-opens=java.base/java.time=ALL-UNNAMED")
+}
+tasks.withType<JavaExec> {
+    jvmArgs("--add-opens=java.base/java.time=ALL-UNNAMED")
 }

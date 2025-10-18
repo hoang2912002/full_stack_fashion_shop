@@ -26,6 +26,7 @@ public class SecurityConfiguration {
         String[] whiteLists = {
             "/",
             "/api/v1/auth/**",
+            "/api/v1/admin/users/**",
         };
         http
             .cors(Customizer.withDefaults())

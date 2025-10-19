@@ -1,6 +1,7 @@
 package vn.clothing.fashion_shop.domain;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -36,11 +37,15 @@ import vn.clothing.fashion_shop.security.SecurityUtils;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class User extends AbstractAuditingEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Override
+    public Long getId() {
+        return this.id;
+    }
 
     private String fullName;
     private String email;
@@ -57,29 +62,29 @@ public class User {
     @Column(columnDefinition = "MEDIUMTEXT")
     private String refreshToken;
 
-    private Instant createdAt;
-    private Instant updatedAt;
-    private String createdBy;
-    private String updatedBy;
+    // private Instant createdAt;
+    // private Instant updatedAt;
+    // private String createdBy;
+    // private String updatedBy;
 
     @OneToMany( mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     // @JsonIgnore
     @JsonManagedReference
-    List<Address> addresses;
+    List<Address> addresses = new ArrayList<>();
 
     @ManyToOne()
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @PrePersist
-    public void handleSetCreatedUser(){
-        this.setCreatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
-        this.setCreatedAt(Instant.now());
-    } 
+    // @PrePersist
+    // public void handleSetCreatedUser(){
+    //     this.setCreatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
+    //     this.setCreatedAt(Instant.now());
+    // } 
 
-    @PreUpdate
-    public void handleSetUpdatedUser(){
-        this.setUpdatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
-        this.setUpdatedAt(Instant.now());
-    } 
+    // @PreUpdate
+    // public void handleSetUpdatedUser(){
+    //     this.setUpdatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
+    //     this.setUpdatedAt(Instant.now());
+    // } 
 }

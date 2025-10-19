@@ -99,53 +99,27 @@ public class UserService {
         return userDTO;
     }
 
-    public UpdateUserDTO updateUser(
-            User user) {
+    public UpdateUserDTO updateUser( User user) {
         User updateUser = findRawUserById(user.getId());
         updateUser.setAge(user.getAge());
         updateUser.setAvatar(user.getAvatar());
         updateUser.setFullName(user.getFullName());
-        Role role = null;
-        List<Address> addresses = new ArrayList<>();
-        UpdateUserDTO updateUserDTO = new UpdateUserDTO();
-        List<UpdateUserDTO.InnerAddressDTO> addressesDTO = new ArrayList<>();
-        UpdateUserDTO.InnerRoleDTO roleDTO = updateUserDTO.new InnerRoleDTO();
-        if (user.getRole() != null) {
-            role = this.roleService.handleGetRoleById(user.getRole().getId());
-        }
-        for (Address addr : user.getAddresses()) {
-            Address currentAddress;
-            if (addr.getId() != null) {
-                // ✅ Address cũ => update
-                currentAddress = this.addressService.getRawAddressById(addr.getId());
-                currentAddress.setAddress(addr.getAddress());
-                currentAddress.setCity(addr.getCity());
-                currentAddress.setDistrict(addr.getDistrict());
-                currentAddress.setWard(addr.getWard());
-            } else {
-                // ✅ Address mới => insert
-                currentAddress = new Address();
-                currentAddress.setAddress(addr.getAddress());
-                currentAddress.setCity(addr.getCity());
-                currentAddress.setDistrict(addr.getDistrict());
-                currentAddress.setWard(addr.getWard());
-                currentAddress.setUser(updateUser); // gán quan hệ
-            }
-            currentAddress.setActivated(true);
-            currentAddress.setUser(updateUser);
-            currentAddress= this.addressService.saveAddress(currentAddress);
-            addresses.add(currentAddress);
-            addressesDTO.add(updateUserDTO.new InnerAddressDTO(currentAddress.getId(),currentAddress.getAddress(),currentAddress.getCity(),currentAddress.getDistrict(),currentAddress.getWard()));
-        }
 
+        UpdateUserDTO updateUserDTO = new UpdateUserDTO();
+        UpdateUserDTO.InnerRoleDTO roleDTO = updateUserDTO.new InnerRoleDTO();
+
+        Role role = (user.getRole() != null) 
+            ? this.roleService.handleGetRoleById(user.getRole().getId()) : null;
         updateUser.setRole(role);
+
+        List<UpdateUserDTO.InnerAddressDTO> addresses = this.addressService.handleAddressesForUser(updateUser, user.getAddresses());
         // updateUser.setAddresses(addresses);
         updateUser = this.userRepository.saveAndFlush(updateUser);
         
         BeanUtils.copyProperties(updateUser, updateUserDTO);
         BeanUtils.copyProperties(role != null ? role : roleDTO, roleDTO);
         updateUserDTO.setRole(roleDTO);
-        updateUserDTO.setAddresses(addressesDTO);
+        updateUserDTO.setAddresses(addresses);
         return updateUserDTO;
 
     }

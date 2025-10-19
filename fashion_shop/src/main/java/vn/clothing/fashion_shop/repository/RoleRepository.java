@@ -7,5 +7,7 @@ import vn.clothing.fashion_shop.domain.Role;
 
 
 public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificationExecutor<Role>{
-    
+    boolean existsBySlugAndIdNot(String slug, Long id);
+
+    boolean existsBySlug(String slug);
 }

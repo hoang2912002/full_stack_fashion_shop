@@ -5,14 +5,19 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
+import vn.clothing.fashion_shop.constants.util.ConvertPagination;
 import vn.clothing.fashion_shop.domain.Address;
 import vn.clothing.fashion_shop.domain.Role;
 import vn.clothing.fashion_shop.domain.User;
 import vn.clothing.fashion_shop.repository.UserRepository;
+import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.user.CreateUserDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.user.GetUserDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.user.UpdateUserDTO;
@@ -122,5 +127,30 @@ public class UserService {
         updateUserDTO.setAddresses(addresses);
         return updateUserDTO;
 
+    }
+
+    public PaginationDTO getAllUser(Pageable pageable, Specification<User> spec){
+        Page<User> users = this.userRepository.findAll(spec, pageable);
+        List<GetUserDTO> userDTOs = users.getContent().stream().map(u -> {
+            GetUserDTO userDTO = new GetUserDTO();
+            BeanUtils.copyProperties(u, userDTO);
+
+            // Nếu entity User có Role, thì mapping luôn
+            if (u.getRole() != null) {
+                GetUserDTO.InnerRoleDTO roleDTO = userDTO.new InnerRoleDTO();
+                BeanUtils.copyProperties(u.getRole(), roleDTO);
+                userDTO.setRole(roleDTO);
+            }
+
+            return userDTO;
+        }).toList();
+
+        return ConvertPagination.handleConvert(pageable, users, userDTOs);
+    }
+
+    public Void deleteUserById(Long id){
+        User user = findRawUserById(id);
+        this.userRepository.deleteById(id);
+        return null;
     }
 }

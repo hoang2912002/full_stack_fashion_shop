@@ -41,4 +41,14 @@ public class GlobalException {
         res.setMessage(errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
+
+    @ExceptionHandler(value = {
+        PermissionException.class
+    })
+    public ResponseEntity<ApiResponse> handlePermissionException(Exception ex) {
+        ApiResponse res = new ApiResponse<>();
+        res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        res.setMessage(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+    }
 }

@@ -10,4 +10,8 @@ public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificat
     boolean existsBySlugAndIdNot(String slug, Long id);
 
     boolean existsBySlug(String slug);
+
+    boolean existsByName(String name);
+
+    Role findByName(String name);
 }

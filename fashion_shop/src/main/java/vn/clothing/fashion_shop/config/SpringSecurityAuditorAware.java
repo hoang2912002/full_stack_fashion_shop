@@ -15,7 +15,7 @@ public class SpringSecurityAuditorAware {
     @Bean
     public AuditorAware<String> auditorAware() {
         return () -> {
-            return Optional.of(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
+            return Optional.of(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : "");
         };
     }
 }

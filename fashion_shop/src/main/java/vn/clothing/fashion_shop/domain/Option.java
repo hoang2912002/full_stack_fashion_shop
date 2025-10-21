@@ -24,19 +24,24 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Option {
+public class Option extends AbstractAuditingEntity  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Override
+    public Long getId() {
+        return this.id;
+    }
 
     private String name;
     private String slug;
 
     private boolean activated;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private String createdBy;
-    private String updatedBy;
+    // private Instant createdAt;
+    // private Instant updatedAt;
+    // private String createdBy;
+    // private String updatedBy;
 
     @OneToMany( mappedBy = "option", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore

@@ -29,7 +29,7 @@ public class CreateUserDTO {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
-    public class InnerAddressDTO {
+    public static class InnerAddressDTO {
         private Long id;
         private String address;
         private String city;
@@ -41,7 +41,7 @@ public class CreateUserDTO {
     @Getter
     @AllArgsConstructor
     @NoArgsConstructor
-    public class InnerRoleDTO {
+    public static class InnerRoleDTO {
         private Long id;
         private String name;
         private String slug;

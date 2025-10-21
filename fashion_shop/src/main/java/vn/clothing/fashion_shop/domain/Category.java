@@ -28,18 +28,24 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Category {
+public class Category extends AbstractAuditingEntity  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Override
+    public Long getId() {
+        return this.id;
+    }
+
     private String name;
     private String slug;
     private boolean activated;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private String createdBy;
-    private String updatedBy;
+    
+    // private Instant createdAt;
+    // private Instant updatedAt;
+    // private String createdBy;
+    // private String updatedBy;
     // 🔹 category cha
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")

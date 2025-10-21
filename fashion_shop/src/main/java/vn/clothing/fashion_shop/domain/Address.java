@@ -27,10 +27,15 @@ import vn.clothing.fashion_shop.security.SecurityUtils;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Address {
+public class Address extends AbstractAuditingEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Override
+    public Long getId() {
+        return this.id;
+    }
 
     private String address;
     private String city;
@@ -38,26 +43,13 @@ public class Address {
     private String ward;
     private boolean activated;
 
-    private Instant createdAt;
-    private Instant updatedAt;
-    private String createdBy;
-    private String updatedBy;
+    // private Instant createdAt;
+    // private Instant updatedAt;
+    // private String createdBy;
+    // private String updatedBy;
 
     @ManyToOne()
     @JoinColumn(name = "user_id")
     @JsonBackReference
     private User user;
-
-
-    @PrePersist
-    public void handleSetCreatedUser(){
-        this.setCreatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
-        this.setCreatedAt(Instant.now());
-    } 
-
-    @PreUpdate
-    public void handleSetUpdatedUser(){
-        this.setUpdatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
-        this.setUpdatedAt(Instant.now());
-    } 
 }

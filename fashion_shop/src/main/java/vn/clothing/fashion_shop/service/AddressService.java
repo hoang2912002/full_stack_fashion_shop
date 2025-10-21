@@ -3,6 +3,7 @@ package vn.clothing.fashion_shop.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.stereotype.Service;
 
@@ -43,9 +44,13 @@ public class AddressService {
         return newAddress;
     }
 
-    public List<UpdateUserDTO.InnerAddressDTO> handleAddressesForUser(User updateUser, List<Address> inputAddresses) {
-        List<UpdateUserDTO.InnerAddressDTO> result = new ArrayList<>();
-        UpdateUserDTO updateUserDTO = new UpdateUserDTO();
+    public <T> List<T> handleAddressesForUser(
+        User updateUser, 
+        List<Address> inputAddresses,
+        Function<Address, T> mapper
+    ) {
+        List<T> result = new ArrayList<>();
+        // UpdateUserDTO updateUserDTO = new UpdateUserDTO();
         if (inputAddresses == null)
             return result;
 
@@ -67,7 +72,7 @@ public class AddressService {
             currentAddress.setActivated(true);
             currentAddress.setUser(updateUser);
             currentAddress = saveAddress(currentAddress);
-            result.add(updateUserDTO.new InnerAddressDTO(currentAddress.getId(),currentAddress.getAddress(),currentAddress.getCity(),currentAddress.getDistrict(),currentAddress.getWard()));
+            result.add(mapper.apply(currentAddress));
         }
 
         return result;

@@ -31,19 +31,24 @@ import vn.clothing.fashion_shop.security.SecurityUtils;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role {
+public class Role extends AbstractAuditingEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Override
+    public Long getId() {
+        return this.id;
+    }
+    
     private String name;
     private String slug;
     private boolean activated;
 
-    private Instant createdAt;
-    private Instant updatedAt;
-    private String createdBy;
-    private String updatedBy;
+    // private Instant createdAt;
+    // private Instant updatedAt;
+    // private String createdBy;
+    // private String updatedBy;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = {"roles"})
@@ -54,16 +59,4 @@ public class Role {
     @OneToMany( mappedBy = "role", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore
     List<User> users;
-
-    @PrePersist
-    public void handleSetCreatedUser(){
-        this.setCreatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
-        this.setCreatedAt(Instant.now());
-    } 
-
-    @PreUpdate
-    public void handleSetUpdatedUser(){
-        this.setUpdatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
-        this.setUpdatedAt(Instant.now());
-    } 
 }

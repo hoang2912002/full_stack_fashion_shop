@@ -48,32 +48,34 @@ public class UserService {
             throw new RuntimeException("Người dùng với email: " + user.getEmail() + " đã tồn tại");
         }
         Role role = new Role();
-        List<Address> addresses = new ArrayList<>();
+        // List<Address> addresses = new ArrayList<>();
         if (user.getRole() != null) {
             role = this.roleService.handleGetRoleById(user.getRole().getId());
         }
 
-        if (user.getAddresses() != null && user.getAddresses().size() > 0) {
-            addresses = user.getAddresses().stream().map(
-                    a -> {
-                        Address address = new Address();
-                        BeanUtils.copyProperties(a, address);
-                        return address;
-                    }).toList();
-        } else {
-            role = null;
-        }
         User userForCreate = new User();
         BeanUtils.copyProperties(user, userForCreate);
         userForCreate.setRole(role);
         userForCreate.setActivated(true);
         userForCreate.setPassword(this.passwordEncoder.encode(user.getPassword()));
+        userForCreate.setAddresses(null);
         User userAfterCreate = this.userRepository.save(userForCreate);
+        
+        List<CreateUserDTO.InnerAddressDTO> addresses = 
+            this.addressService.handleAddressesForUser(
+                userAfterCreate, 
+                user.getAddresses(),
+                addr -> new CreateUserDTO.InnerAddressDTO(
+                    addr.getId(), addr.getAddress(), addr.getCity(), addr.getDistrict(), addr.getWard()
+                )
+            );
+        
         CreateUserDTO createUserDTO = new CreateUserDTO();
-        CreateUserDTO.InnerRoleDTO roleDTO = createUserDTO.new InnerRoleDTO();
+        CreateUserDTO.InnerRoleDTO roleDTO = new CreateUserDTO.InnerRoleDTO();
         BeanUtils.copyProperties(userAfterCreate, createUserDTO);
         BeanUtils.copyProperties(role == null ? new Role() : role, roleDTO);
         createUserDTO.setRole(roleDTO);
+        createUserDTO.setAddresses(addresses);
         return createUserDTO;
 
     }
@@ -111,13 +113,19 @@ public class UserService {
         updateUser.setFullName(user.getFullName());
 
         UpdateUserDTO updateUserDTO = new UpdateUserDTO();
-        UpdateUserDTO.InnerRoleDTO roleDTO = updateUserDTO.new InnerRoleDTO();
+        UpdateUserDTO.InnerRoleDTO roleDTO = new UpdateUserDTO.InnerRoleDTO();
 
         Role role = (user.getRole() != null) 
             ? this.roleService.handleGetRoleById(user.getRole().getId()) : null;
         updateUser.setRole(role);
 
-        List<UpdateUserDTO.InnerAddressDTO> addresses = this.addressService.handleAddressesForUser(updateUser, user.getAddresses());
+        List<UpdateUserDTO.InnerAddressDTO> addresses = 
+            this.addressService.handleAddressesForUser(
+                updateUser, user.getAddresses(),
+                addr -> new UpdateUserDTO.InnerAddressDTO(
+                    addr.getId(), addr.getAddress(), addr.getCity(), addr.getDistrict(), addr.getWard()
+                )
+            );
         // updateUser.setAddresses(addresses);
         updateUser = this.userRepository.saveAndFlush(updateUser);
         

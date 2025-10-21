@@ -24,20 +24,25 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Manufacture {
+public class Manufacture extends AbstractAuditingEntity  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Override
+    public Long getId() {
+        return this.id;
+    }
 
     private String name;
     private String slug;
     private String logo;
 
     private boolean activated;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private String createdBy;
-    private String updatedBy;
+    // private Instant createdAt;
+    // private Instant updatedAt;
+    // private String createdBy;
+    // private String updatedBy;
 
     @OneToMany( mappedBy = "manufacture", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore

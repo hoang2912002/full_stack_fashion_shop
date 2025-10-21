@@ -40,7 +40,7 @@ public abstract class AbstractAuditingEntity<T> implements Serializable{
     private String updatedBy;
 
     @LastModifiedDate
-    @Column(name = "update_at")
+    @Column(name = "updated_at")
     private Instant updatedAt = Instant.now();
 
 }

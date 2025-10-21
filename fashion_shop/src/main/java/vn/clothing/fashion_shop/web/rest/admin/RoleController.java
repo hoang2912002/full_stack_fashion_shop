@@ -5,9 +5,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.turkraft.springfilter.boot.Filter;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.constants.util.ConvertPagination;
+import vn.clothing.fashion_shop.domain.Permission;
 import vn.clothing.fashion_shop.domain.Role;
 import vn.clothing.fashion_shop.service.RoleService;
 import vn.clothing.fashion_shop.service.UserService;
@@ -15,7 +17,9 @@ import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.role.CreateRoleDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.role.GetRoleDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.role.UpdateRoleDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.role.ValidationRoleDTO;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -42,17 +46,21 @@ public class RoleController {
     @PostMapping("")
     @ApiMessageResponse("Thêm mới role thành công")
     public ResponseEntity<CreateRoleDTO> createRole(
-        @RequestBody Role role
+        @RequestBody @Valid ValidationRoleDTO role
     ) {        
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.roleService.createRole(role));
+        Role createRole = new Role();
+        BeanUtils.copyProperties(role, createRole);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.roleService.createRole(createRole));
     }
     
     @PutMapping("")
     @ApiMessageResponse("Cập nhật role thành công")
     public ResponseEntity<UpdateRoleDTO> updateRole(
-        @RequestBody Role role
+        @RequestBody @Valid ValidationRoleDTO role
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(this.roleService.updateRole(role));
+        Role updateRole = new Role();
+        BeanUtils.copyProperties(role, updateRole);
+        return ResponseEntity.status(HttpStatus.OK).body(this.roleService.updateRole(updateRole));
     }
 
     @GetMapping("/{id}")

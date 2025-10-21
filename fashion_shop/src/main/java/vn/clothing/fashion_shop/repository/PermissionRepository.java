@@ -9,4 +9,7 @@ import vn.clothing.fashion_shop.domain.Permission;
 
 public interface PermissionRepository extends JpaRepository<Permission, Long>, JpaSpecificationExecutor<Permission>{
     List<Permission> findAllByIdIn(List<Long> id);
+
+    boolean existsByApiPathAndMethod(String apiPath, String method);
+    boolean existsByApiPathAndMethodAndIdNot(String apiPath, String method, Long id);
 }

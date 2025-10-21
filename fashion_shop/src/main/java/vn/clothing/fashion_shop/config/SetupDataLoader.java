@@ -157,6 +157,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         Map<RequestMappingInfo, HandlerMethod> map = handlerMapping.getHandlerMethods();
+
         List<Permission> listPermission = new ArrayList<>();
         map.forEach((info, handlerMethod) -> {
             Set<String> patterns = info.getPathPatternsCondition().getPatternValues();
@@ -188,14 +189,19 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
                 );
             }
         });
-        Long countPermission = this.permissionRepository.count();
-        Role roleByName = this.roleRepository.findByName("admin");
-        Optional<User> userOptional = this.userRepository.findByEmail("admin@gmail.com");
-        if(countPermission != listPermission.size()){
-            // this.permissionRepository.save(listPermission.getFirst());
-            this.permissionRepository.saveAll(listPermission);
-        }
+        List<Permission> permissionsDB = this.permissionRepository.findAll();
+        Set<String> existingEndpoints = permissionsDB.stream()
+            .map(p -> p.getApiPath() + "::" + p.getMethod())
+            .collect(Collectors.toSet());
 
+        List<Permission> newPermissions = listPermission.stream()
+            .filter(p -> !existingEndpoints.contains(p.getApiPath() + "::" + p.getMethod()))
+            .toList();
+        if(!newPermissions.isEmpty()){
+            this.permissionRepository.saveAll(newPermissions);
+        }
+        
+        Role roleByName = this.roleRepository.findByName("admin");
         if(roleByName == null){
             List<Permission> listPermissions = this.permissionRepository.findAll();
             Role role = new Role();
@@ -205,6 +211,8 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             role.setPermissions(listPermissions);
             this.roleRepository.save(role);
         }
+
+        Optional<User> userOptional = this.userRepository.findByEmail("admin@gmail.com");
         if(!userOptional.isPresent() || userOptional == null){
             User user = new User();
             user.setEmail("admin@gmail.com");
@@ -220,7 +228,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             this.userRepository.save(user);
         }
 
-        if(countPermission > 0 && roleByName != null && userOptional.isPresent()){
+        if(newPermissions.isEmpty() && roleByName != null && userOptional.isPresent()){
             System.out.println(">>> SKIP INIT DATABASE ALREADY HAVE DATA....");
         }
         else{

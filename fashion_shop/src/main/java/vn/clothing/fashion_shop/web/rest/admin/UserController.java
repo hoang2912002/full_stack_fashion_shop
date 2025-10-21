@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.turkraft.springfilter.boot.Filter;
 
+import jakarta.validation.Valid;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.constants.annotation.SkipWrapResponse;
 import vn.clothing.fashion_shop.domain.User;
@@ -13,7 +14,9 @@ import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.user.CreateUserDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.user.GetUserDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.user.UpdateUserDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.user.ValidationUserDTO;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -41,18 +44,22 @@ public class UserController {
     @PostMapping("")
     @ApiMessageResponse("Tạo mới người dùng thành công")
     public ResponseEntity<CreateUserDTO> createUser(
-        @RequestBody User user
+        @RequestBody @Valid ValidationUserDTO user
     ) throws Exception {
-        CreateUserDTO userCreateDTO = this.userService.createUser(user);
+        User createUser = new User();
+        BeanUtils.copyProperties(user, createUser);
+        CreateUserDTO userCreateDTO = this.userService.createUser(createUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(userCreateDTO);
     }
     
     @PutMapping("")
     @ApiMessageResponse("Cập nhật người dùng thành công")
     public ResponseEntity<UpdateUserDTO> updateUser(
-        @RequestBody User user
+        @RequestBody @Valid ValidationUserDTO user
     ) {
-        UpdateUserDTO updateUserDTO = this.userService.updateUser(user);
+        User updateUser = new User();
+        BeanUtils.copyProperties(user, updateUser);
+        UpdateUserDTO updateUserDTO = this.userService.updateUser(updateUser);
         return ResponseEntity.ok(updateUserDTO);
     }
 

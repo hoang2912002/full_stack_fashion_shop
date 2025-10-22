@@ -9,6 +9,9 @@ public class SlugUtil {
         if (input == null || input.isEmpty()) {
             return "";
         }
+
+        input = input.replace('Đ', 'D').replace('đ', 'd');
+
         // 1️⃣ Chuẩn hoá ký tự Unicode (xử lý dấu tiếng Việt)
         String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
 

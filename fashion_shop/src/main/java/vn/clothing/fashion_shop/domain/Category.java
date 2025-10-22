@@ -5,7 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.annotations.Where;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -49,11 +54,16 @@ public class Category extends AbstractAuditingEntity  {
     // 🔹 category cha
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
+    @JsonBackReference
     private Category parent;
 
     // 🔹 danh sách category con
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    @Where(clause = "activated = true")
+    // @JsonIgnoreProperties({"children", "parent"})  // bỏ qua children cấp 2 trở đi
     private Set<Category> children = new HashSet<>();
+    // private List<Category> children;
 
     @OneToMany( mappedBy = "category", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore

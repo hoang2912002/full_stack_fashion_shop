@@ -9,9 +9,7 @@ import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Option;
 import vn.clothing.fashion_shop.service.OptionService;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.option.CreateOptionDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.option.UpdateOptionDTO;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -39,7 +37,7 @@ public class OptionController {
 
     @PostMapping("")
     @ApiMessageResponse("Thêm option thành công")
-    public ResponseEntity<CreateOptionDTO> createOption(
+    public ResponseEntity<GetOptionDTO> createOption(
         @RequestBody Option option
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.optionService.createOption(option));
@@ -47,7 +45,7 @@ public class OptionController {
 
     @PutMapping("")
     @ApiMessageResponse("Cập nhật option thành công")
-    public ResponseEntity<UpdateOptionDTO> updateOption(
+    public ResponseEntity<GetOptionDTO> updateOption(
         @RequestBody Option option
     ) {        
         return ResponseEntity.ok(this.optionService.updateOption(option));

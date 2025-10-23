@@ -9,9 +9,7 @@ import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.OptionValue;
 import vn.clothing.fashion_shop.service.OptionValueService;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.optionValue.CreateOptionValueDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.optionValue.GetOptionValueDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.optionValue.UpdateOptionValueDTO;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -39,7 +37,7 @@ public class OptionValueController {
 
     @PostMapping("")
     @ApiMessageResponse("Thêm option value thành công")
-    public ResponseEntity<CreateOptionValueDTO> createOptionValue(
+    public ResponseEntity<GetOptionValueDTO> createOptionValue(
         @RequestBody OptionValue optionValue
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.optionValueService.createOptionValue(optionValue));
@@ -47,7 +45,7 @@ public class OptionValueController {
     
     @PutMapping("")
     @ApiMessageResponse("Cập nhật option value thành công")
-    public ResponseEntity<UpdateOptionValueDTO> updateOptionValue(
+    public ResponseEntity<GetOptionValueDTO> updateOptionValue(
         @RequestBody OptionValue optionValue
     ) {        
         return ResponseEntity.ok(this.optionValueService.updateOptionValue(optionValue));

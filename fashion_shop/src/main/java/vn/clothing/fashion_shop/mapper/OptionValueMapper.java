@@ -7,9 +7,7 @@ import org.mapstruct.factory.Mappers;
 
 import vn.clothing.fashion_shop.domain.OptionValue;
 import vn.clothing.fashion_shop.domain.Product;
-import vn.clothing.fashion_shop.web.rest.DTO.optionValue.CreateOptionValueDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.optionValue.GetOptionValueDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.optionValue.UpdateOptionValueDTO;
 
 //componentModel = "spring" giúp Spring tự inject mapper qua @Autowired.
 /*
@@ -45,13 +43,9 @@ public interface OptionValueMapper {
     OptionValueMapper INSTANCE = Mappers.getMapper(OptionValueMapper.class);
 
     // Map từ Entity sang DTO
-    CreateOptionValueDTO toCreateDto(OptionValue entity);
-    UpdateOptionValueDTO toUpdateDto(OptionValue entity);
     GetOptionValueDTO toGetDto(OptionValue entity);
     List<GetOptionValueDTO> toGetListDTO(List<OptionValue> optionValues);
 
     // Map từ DTO sang Entity
-    OptionValue toEntity(CreateOptionValueDTO dto);
-    OptionValue toEntity(UpdateOptionValueDTO dto);
     OptionValue toEntity(GetOptionValueDTO dto);
 }

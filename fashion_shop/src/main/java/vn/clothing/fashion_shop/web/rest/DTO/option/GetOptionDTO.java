@@ -22,4 +22,14 @@ public class GetOptionDTO {
     private boolean activated;
     private Instant updatedAt;
     private boolean updatedBy;
+
+    @Setter
+    @Getter
+    @NoArgsConstructor
+    public static class InnerOptionValueDTO {
+        private Long id;
+        private String name;
+        private String slug;
+        
+    }
 }

@@ -15,9 +15,7 @@ import vn.clothing.fashion_shop.domain.OptionValue;
 import vn.clothing.fashion_shop.mapper.OptionMapper;
 import vn.clothing.fashion_shop.repository.OptionRepository;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.option.CreateOptionDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.option.UpdateOptionDTO;
 
 @Service
 public class OptionService {
@@ -31,7 +29,7 @@ public class OptionService {
         this.optionValueService = optionValueService;
     }
     
-    public CreateOptionDTO createOption(Option option){
+    public GetOptionDTO createOption(Option option){
         String slug = SlugUtil.toSlug(option.getName());
         if(getRawOptionBySlug(slug,null) != null){
             throw new RuntimeException("Option: " + option.getName() + " đã tồn tại");
@@ -42,10 +40,10 @@ public class OptionService {
         .activated(true)
         .build();
         createOption = this.optionRepository.saveAndFlush(createOption);
-        return optionMapper.toCreate(createOption);
+        return optionMapper.toGetDto(createOption);
     }
 
-    public UpdateOptionDTO updateOption(Option option){
+    public GetOptionDTO updateOption(Option option){
         Option updateOption = getRawOptionById(option.getId());
         if(updateOption == null){
             throw new RuntimeException("Option với id: " + option.getId() + " không tồn tại");
@@ -57,7 +55,7 @@ public class OptionService {
         updateOption.setSlug(slug);
         updateOption.setName(option.getName());
         updateOption = this.optionRepository.saveAndFlush(updateOption);
-        return optionMapper.toUpdate(updateOption);
+        return optionMapper.toGetDto(updateOption);
     }
 
     public Option getRawOptionBySlug(String slug, Long checkId){

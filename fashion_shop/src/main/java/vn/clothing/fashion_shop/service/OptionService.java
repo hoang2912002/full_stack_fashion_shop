@@ -40,7 +40,7 @@ public class OptionService {
         .activated(true)
         .build();
         createOption = this.optionRepository.saveAndFlush(createOption);
-        return optionMapper.toGetDto(createOption);
+        return optionMapper.toDto(createOption);
     }
 
     public GetOptionDTO updateOption(Option option){
@@ -55,7 +55,7 @@ public class OptionService {
         updateOption.setSlug(slug);
         updateOption.setName(option.getName());
         updateOption = this.optionRepository.saveAndFlush(updateOption);
-        return optionMapper.toGetDto(updateOption);
+        return optionMapper.toDto(updateOption);
     }
 
     public Option getRawOptionBySlug(String slug, Long checkId){
@@ -76,12 +76,12 @@ public class OptionService {
         if(option == null){
             throw new RuntimeException("Option với id: " + id + " không tồn tại");
         }
-        return optionMapper.toGetDto(option);
+        return optionMapper.toDto(option);
     }
 
     public PaginationDTO getAllOption(Pageable pageable,Specification specification){
         Page<Option> options = this.optionRepository.findAll(specification, pageable);
-        List<GetOptionDTO> optionDTOs = this.optionMapper.toGetListDTO(options.getContent());
+        List<GetOptionDTO> optionDTOs = this.optionMapper.toDto(options.getContent());
         return ConvertPagination.handleConvert(pageable, options, optionDTOs);
     }
 }

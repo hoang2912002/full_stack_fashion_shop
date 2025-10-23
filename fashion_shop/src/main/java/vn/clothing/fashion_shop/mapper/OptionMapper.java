@@ -15,12 +15,12 @@ import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO;
         OptionValueMapper.class
     }
 )
-public interface OptionMapper {
+public interface OptionMapper extends EntityMapper<GetOptionDTO,Option> {
     OptionMapper INSTANCE = Mappers.getMapper(OptionMapper.class);
 
-    GetOptionDTO toGetDto(Option option);
+    GetOptionDTO toDto(Option option);
 
-    List<GetOptionDTO> toGetListDTO(List<Option> options);
+    List<GetOptionDTO> toDto(List<Option> options);
 
     Option toEntity(GetOptionDTO dto);
 }

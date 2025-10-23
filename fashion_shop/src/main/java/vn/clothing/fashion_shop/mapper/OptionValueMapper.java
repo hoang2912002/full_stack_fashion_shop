@@ -39,12 +39,12 @@ import vn.clothing.fashion_shop.web.rest.DTO.optionValue.GetOptionValueDTO;
  *      - @Mapper(componentModel = "spring", uses = { CategoryMapper.class })
  */
 @Mapper(componentModel = "spring")
-public interface OptionValueMapper {
+public interface OptionValueMapper extends EntityMapper<GetOptionValueDTO, OptionValue> {
     OptionValueMapper INSTANCE = Mappers.getMapper(OptionValueMapper.class);
 
     // Map từ Entity sang DTO
-    GetOptionValueDTO toGetDto(OptionValue entity);
-    List<GetOptionValueDTO> toGetListDTO(List<OptionValue> optionValues);
+    GetOptionValueDTO toDto(OptionValue entity);
+    List<GetOptionValueDTO> toDto(List<OptionValue> optionValues);
 
     // Map từ DTO sang Entity
     OptionValue toEntity(GetOptionValueDTO dto);

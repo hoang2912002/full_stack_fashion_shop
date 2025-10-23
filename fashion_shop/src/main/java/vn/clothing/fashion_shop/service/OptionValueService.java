@@ -51,7 +51,7 @@ public class OptionValueService {
         .option(option)
         .build();
         createOptionValue = this.optionValueRepository.saveAndFlush(createOptionValue);
-        return optionValueMapper.toGetDto(createOptionValue);
+        return optionValueMapper.toDto(createOptionValue);
     }
 
     public GetOptionValueDTO updateOptionValue(OptionValue optionValue){
@@ -71,7 +71,7 @@ public class OptionValueService {
         updateOptionValue.setSlug(slug);
         updateOptionValue.setOption(option);
         updateOptionValue = this.optionValueRepository.saveAndFlush(updateOptionValue);
-        return optionValueMapper.toGetDto(updateOptionValue);
+        return optionValueMapper.toDto(updateOptionValue);
     }
 
     public Option getRawOptionById(Long id){
@@ -99,12 +99,12 @@ public class OptionValueService {
         if(optionValue == null){
             throw new RuntimeException("Gía trị với id: " + id + " không tồn tại");
         }
-        return optionValueMapper.toGetDto(optionValue);
+        return optionValueMapper.toDto(optionValue);
     }
 
     public PaginationDTO getAllOptionValue(Pageable pageable, Specification specification){
         Page<OptionValue> optionValues = this.optionValueRepository.findAll(specification, pageable);
-        List<GetOptionValueDTO> listOpValue = optionValueMapper.toGetListDTO(optionValues.getContent());
+        List<GetOptionValueDTO> listOpValue = optionValueMapper.toDto(optionValues.getContent());
         return ConvertPagination.handleConvert(pageable, optionValues, listOpValue);
     }
 }

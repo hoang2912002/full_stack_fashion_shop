@@ -2,18 +2,22 @@ package vn.clothing.fashion_shop.web.rest.DTO.option;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import vn.clothing.fashion_shop.web.validation.option.OptionMatching;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GetOptionDTO {
+@OptionMatching
+public class ValidationOptionDTO {
     private Long id;
     private String name;
     private String slug;
@@ -22,14 +26,6 @@ public class GetOptionDTO {
     private boolean activated;
     private Instant updatedAt;
     private String updatedBy;
-
-    @Setter
-    @Getter
-    @NoArgsConstructor
-    public static class InnerOptionValueDTO {
-        private Long id;
-        private String name;
-        private String slug;
-        
-    }
+    @JsonProperty("isCreate")
+    private boolean isCreate;
 }

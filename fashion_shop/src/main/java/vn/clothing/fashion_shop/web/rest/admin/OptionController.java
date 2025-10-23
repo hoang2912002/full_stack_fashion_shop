@@ -5,12 +5,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.turkraft.springfilter.boot.Filter;
 
+import jakarta.validation.Valid;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Option;
 import vn.clothing.fashion_shop.service.OptionService;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.option.ValidationOptionDTO;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -38,17 +41,21 @@ public class OptionController {
     @PostMapping("")
     @ApiMessageResponse("Thêm option thành công")
     public ResponseEntity<GetOptionDTO> createOption(
-        @RequestBody Option option
+        @RequestBody @Valid ValidationOptionDTO option
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.optionService.createOption(option));
+        Option createOption = new Option();
+        BeanUtils.copyProperties(option, createOption);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.optionService.createOption(createOption));
     }
 
     @PutMapping("")
     @ApiMessageResponse("Cập nhật option thành công")
     public ResponseEntity<GetOptionDTO> updateOption(
-        @RequestBody Option option
+        @RequestBody @Valid ValidationOptionDTO option
     ) {        
-        return ResponseEntity.ok(this.optionService.updateOption(option));
+        Option updateOption = new Option();
+        BeanUtils.copyProperties(option, updateOption);
+        return ResponseEntity.ok(this.optionService.updateOption(updateOption));
     }
     
     @GetMapping("/{id}")

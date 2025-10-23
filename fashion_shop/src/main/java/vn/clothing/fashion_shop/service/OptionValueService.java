@@ -70,6 +70,9 @@ public class OptionValueService {
         Optional<OptionValue> opValue = this.optionValueRepository.findById(id);
         return opValue.isPresent() ? opValue.get() : null;
     }
+    public List<OptionValue> getRawListOptionValueById(List<Long> id){
+        return this.optionValueRepository.findAllByIdIn(id);
+    }
 
     public GetOptionValueDTO getOptionValueById(Long id){
         OptionValue optionValue = getRawOptionValueById(id);

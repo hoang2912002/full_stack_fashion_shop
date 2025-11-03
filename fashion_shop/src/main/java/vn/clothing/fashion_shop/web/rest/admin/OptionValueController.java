@@ -11,6 +11,7 @@ import vn.clothing.fashion_shop.domain.OptionValue;
 import vn.clothing.fashion_shop.service.OptionValueService;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.optionValue.GetOptionValueDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.optionValue.ValidationOptionValueDTO;
 import vn.clothing.fashion_shop.web.validation.optionValue.OptionValueMatching;
 
 import org.springframework.beans.BeanUtils;
@@ -41,7 +42,7 @@ public class OptionValueController {
     @PostMapping("")
     @ApiMessageResponse("Thêm option value thành công")
     public ResponseEntity<GetOptionValueDTO> createOptionValue(
-        @RequestBody @Valid OptionValueMatching optionValue
+        @RequestBody @Valid ValidationOptionValueDTO optionValue
     ) {
         OptionValue createOptionValue = new OptionValue();
         BeanUtils.copyProperties(optionValue, createOptionValue);
@@ -51,7 +52,7 @@ public class OptionValueController {
     @PutMapping("")
     @ApiMessageResponse("Cập nhật option value thành công")
     public ResponseEntity<GetOptionValueDTO> updateOptionValue(
-        @RequestBody @Valid OptionValueMatching optionValue
+        @RequestBody @Valid ValidationOptionValueDTO optionValue
     ) {        
         OptionValue updateOptionValue = new OptionValue();
         BeanUtils.copyProperties(optionValue, updateOptionValue);

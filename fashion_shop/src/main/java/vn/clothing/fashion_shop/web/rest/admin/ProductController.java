@@ -18,6 +18,7 @@ import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Product;
+import vn.clothing.fashion_shop.mapper.ProductMapper;
 import vn.clothing.fashion_shop.service.ProductService;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.product.GetProductDTO;
@@ -28,9 +29,11 @@ import vn.clothing.fashion_shop.web.rest.DTO.product.ValidationProductDTO;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductMapper productMapper;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService,ProductMapper productMapper) {
         this.productService = productService;
+        this.productMapper = productMapper;
     }
 
     @PostMapping("")
@@ -38,24 +41,17 @@ public class ProductController {
     public ResponseEntity<GetProductDTO> createProduct(
         @RequestBody @Valid ValidationProductDTO product
     ) {
-        Product createProduct = new Product();
-        createProduct = Product.builder()
-        .name(product.getName())
-        .price(product.getPrice())
-        .quantity(product.getQuantity())
-        .thumbnail(product.getThumbnail())
-        .category(product.getCategory())
-        .activated(true)
-        .build();
+        Product createProduct = productMapper.toValidator(product);
         return ResponseEntity.status(HttpStatus.CREATED).body(this.productService.createProduct(createProduct,product.getVariants()));
     }
     
     @PutMapping("")
     @ApiMessageResponse("Cập nhật sản phẩm thành công")
-    public ResponseEntity<Product> updateProduct(
-        @RequestBody Product product
+    public ResponseEntity<GetProductDTO> updateProduct(
+        @RequestBody @Valid ValidationProductDTO product
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+        Product updateProduct = productMapper.toValidator(product);
+        return ResponseEntity.status(HttpStatus.OK).body(this.productService.updateProduct(updateProduct,product.getVariants()));
     }
 
     @GetMapping("/{id}")
@@ -72,7 +68,7 @@ public class ProductController {
         Pageable pageable,
         @Filter Specification<Product> spec
     ){
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(this.productService.getAllProduct(pageable,spec));
     }
     
     @DeleteMapping("/{id}")

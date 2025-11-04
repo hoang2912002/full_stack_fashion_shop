@@ -9,4 +9,5 @@ import vn.clothing.fashion_shop.domain.Product;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product>{
     Optional<Product> findBySlug(String slug);
+    Optional<Product> findBySlugAndIdNot(String slug, Long id);
 }

@@ -3,16 +3,14 @@ package vn.clothing.fashion_shop.web.rest.DTO.product;
 import java.time.Instant;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vn.clothing.fashion_shop.domain.Category;
 import vn.clothing.fashion_shop.domain.Manufacture;
 import vn.clothing.fashion_shop.domain.ProductSku;
+import vn.clothing.fashion_shop.web.rest.DTO.category.GetCategoryDTO.InnerGetCategoryDTO;
 
 @Getter
 @Setter
@@ -22,12 +20,12 @@ import vn.clothing.fashion_shop.domain.ProductSku;
 public class GetProductDTO {
     private Long id;
     private String name;
-    private Double price;
+    private String price;
     private String thumbnail;
     private int quantity;
     
     private Manufacture manufacture;
-    private Category category;
+    private InnerGetCategoryDTO category;
 
     private Instant createdAt;
     private Instant updatedAt;

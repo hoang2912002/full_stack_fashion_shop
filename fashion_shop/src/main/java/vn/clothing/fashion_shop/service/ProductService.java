@@ -9,9 +9,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import vn.clothing.fashion_shop.constants.util.ConvertPagination;
 import vn.clothing.fashion_shop.constants.util.SlugUtil;
 import vn.clothing.fashion_shop.domain.Category;
 import vn.clothing.fashion_shop.domain.OptionValue;
@@ -20,6 +24,7 @@ import vn.clothing.fashion_shop.domain.ProductSku;
 import vn.clothing.fashion_shop.domain.Variant;
 import vn.clothing.fashion_shop.mapper.ProductMapper;
 import vn.clothing.fashion_shop.repository.ProductRepository;
+import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.product.GetProductDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.product.ValidationProductDTO.InnerVariant;
 
@@ -48,16 +53,22 @@ public class ProductService {
         this.optionValueService = optionValueService;
     }
 
-    @Transactional(rollbackFor = RuntimeException.class)
     public GetProductDTO createProduct(Product product, List<InnerVariant> variants) {
-        
-        // 1️⃣ Kiểm tra trùng slug
+        return upSertProduct(product, variants, null);
+    }
+
+    public GetProductDTO updateProduct(Product product, List<InnerVariant> variants){
+        if(findRawProductById(product.getId()) == null){
+            throw new RuntimeException("Sản phẩm với id: " + product.getId() + " không tồn tại");
+        }
+        return upSertProduct(product, variants, product.getId());
+    }
+    @Transactional(rollbackFor = RuntimeException.class)
+    public GetProductDTO upSertProduct(Product product, List<InnerVariant> variants, Long checkId){
         String slug = SlugUtil.toSlug(product.getName());
-        if (findRawProductBySlug(slug) != null) {
+        if (findRawProductBySlug(slug, checkId) != null) {
             throw new RuntimeException("Sản phẩm: " + product.getName() + " đã tồn tại");
         }
-
-        // 2️⃣ Lấy Category nếu có
         Category category = null;
         if (product.getCategory() != null && product.getCategory().getId() != null) {
             category = categoryService.findRawCategoryById(product.getCategory().getId());
@@ -144,8 +155,18 @@ public class ProductService {
         return productMapper.toDto(createdProduct);
     }
 
-    public Product findRawProductBySlug(String slug) {
-        Optional<Product> productOptional = this.productRepository.findBySlug(slug);
+    public PaginationDTO getAllProduct(Pageable pageable, Specification spec){
+        Page<Product> products = this.productRepository.findAll(spec, pageable);
+        List<GetProductDTO> listProducts = productMapper.toDto(products.getContent());
+        return ConvertPagination.handleConvert(pageable, products, listProducts);
+    }
+    public Product findRawProductBySlug(String slug, Long checkId) {
+        Optional<Product> productOptional = checkId != null ? this.productRepository.findBySlugAndIdNot(slug,checkId) :  this.productRepository.findBySlug(slug);
+        return productOptional.isPresent() ? productOptional.get() : null;
+    }
+    
+    public Product findRawProductById(Long id){
+        Optional<Product> productOptional = this.productRepository.findById(id);
         return productOptional.isPresent() ? productOptional.get() : null;
     }
 }

@@ -18,7 +18,6 @@ import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.category.CreateCategoryDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.category.GetCategoryDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.category.UpdateCategoryDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.user.GetUserDTO;
 
 @Service
 public class CategoryService {
@@ -161,4 +160,9 @@ public class CategoryService {
         Optional<Category> cOptional = this.categoryRepository.findById(id);
         return cOptional.isPresent() && !cOptional.isEmpty() ? cOptional.get() : null;
     }
+
+    public boolean isLeaf(Category category) {
+        return category.getChildren() == null || category.getChildren().isEmpty();
+    }
+
 }

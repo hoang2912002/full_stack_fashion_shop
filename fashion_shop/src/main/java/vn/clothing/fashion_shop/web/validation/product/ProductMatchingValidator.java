@@ -18,11 +18,11 @@ public class ProductMatchingValidator implements ConstraintValidator<ProductMatc
             addViolation(context, "Gía sản phẩm không được để trống", "price");
             valid = false;
         }
-        if(value.getPrice() instanceof Double){
-            addViolation(context, "Gía sản phẩm không đúng định dạng", "price");
-            valid = false;
-        }
-        
+        // if(value.getPrice() instanceof Number){
+        //     addViolation(context, "Gía sản phẩm không đúng định dạng", "price");
+        //     valid = false;
+        // }
+
         if(value.getQuantity() < 0){
             addViolation(context, "Số lượng tối thiểu là 0", "quantity");
             valid = false;

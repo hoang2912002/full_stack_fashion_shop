@@ -12,5 +12,6 @@ public interface OptionValueRepository extends JpaRepository<OptionValue, Long>,
     Optional<OptionValue> findBySlug(String slug);
     Optional<OptionValue> findBySlugAndIdNot(String slug, Long id);
 
-    List<OptionValue> findAllByIdIn(List<Long> id);
+    List<OptionValue> findAllByIdIn(List<Long> id);     
+    List<OptionValue> findAllBySlugIn(List<String> slug);     
 }

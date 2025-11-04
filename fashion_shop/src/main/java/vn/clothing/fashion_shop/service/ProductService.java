@@ -1,12 +1,11 @@
 package vn.clothing.fashion_shop.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,22 +30,25 @@ public class ProductService {
     private final ProductSkuService productSkuService;
     private final VariantService variantService;
     private final ProductMapper productMapper;
+    private final OptionValueService optionValueService;
 
     public ProductService(
             ProductRepository productRepository,
             CategoryService categoryService,
             ProductSkuService productSkuService,
             VariantService variantService,
-            ProductMapper productMapper
+            ProductMapper productMapper,
+            OptionValueService optionValueService
         ) {
         this.productRepository = productRepository;
         this.categoryService = categoryService;
         this.productSkuService = productSkuService;
         this.variantService = variantService;
         this.productMapper = productMapper;
+        this.optionValueService = optionValueService;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = RuntimeException.class)
     public GetProductDTO createProduct(Product product, List<InnerVariant> variants) {
         
         // 1️⃣ Kiểm tra trùng slug
@@ -59,12 +61,15 @@ public class ProductService {
         Category category = null;
         if (product.getCategory() != null && product.getCategory().getId() != null) {
             category = categoryService.findRawCategoryById(product.getCategory().getId());
+            if(!categoryService.isLeaf(category)){
+                throw new RuntimeException("Danh mục sản phẩm id: " + product.getCategory().getId() + " không hợp lệ");
+            }
         }
         product.setSlug(slug);
         product.setCategory(category);
 
         // 3️⃣ Lưu Product chính
-        Product createdProduct = productRepository.saveAndFlush(product);
+        Product createdProduct = productRepository.save(product);
 
         // 4️⃣ Nếu có variant mới xử lý tiếp
         if (variants == null || variants.isEmpty()) {
@@ -97,37 +102,44 @@ public class ProductService {
         // 7️⃣ Lưu danh sách SKU mới
         List<ProductSku> createdSkus = productSkuService.createListProductSku(newProductSkus);
 
-        // 8️⃣ Gom tất cả SKU vừa tạo + đã có (nếu cần link)
+        // 8️⃣ Gom tất cả SKU vừa tạo + đã có
         Map<String, ProductSku> allSkuMap = Stream.concat(createdSkus.stream(), existingSkus.stream())
-                .collect(Collectors.toMap(s -> s.getSku().toUpperCase(), s -> s));
+                .collect(Collectors.toMap(s -> s.getSku().toUpperCase(), Function.identity(),
+                    (a, b) -> a // tránh duplicate key
+                ));
+
+        //Lấy danh sách option value
+        List<String> optionValuesSlug = variants.stream()
+            .flatMap(o -> o.getOptionValues().stream())
+            .distinct() //set lọc phần tử trùng
+            .collect(Collectors.toList());
+
+        Map<String, OptionValue> optionValueMap = 
+            this.optionValueService.getRawListOptionValueBySlug(optionValuesSlug).stream()
+            .collect(Collectors.toMap(OptionValue::getSlug, Function.identity()));
 
         // 9️⃣ Tạo danh sách Variant
-        List<Variant> variantEntities = new ArrayList<>();
-        for (InnerVariant variant : variants) {
-            ProductSku sku = allSkuMap.get(variant.getSkuId().toUpperCase());
-            if (sku == null)
-                continue;
+        List<Variant> variantEntities = variants.stream()
+        .filter(v -> allSkuMap.containsKey(v.getSkuId().toUpperCase()))
+        .flatMap(v -> v.getOptionValues().stream()
+            //đây là cú pháp method reference (tham chiếu hàm)
+            //có ý nghĩa giống lambda => optionValueMap.get(optionValueSlug);
+            .map(optionValueMap::get)
+            //check null
+            .filter(Objects::nonNull)
+            .map(ov -> Variant.builder()
+                    .product(createdProduct)
+                    .sku(allSkuMap.get(v.getSkuId().toUpperCase()))
+                    .option(ov.getOption())
+                    .optionValue(ov)
+                    .build())
+        )
+        // 3️⃣ collect thành list
+        .collect(Collectors.toList());
 
-            for (OptionValue ov : variant.getOptionValues()) {
-                Variant variantEntity = Variant.builder()
-                        .product(createdProduct)
-                        .sku(sku)
-                        .option(ov.getOption())
-                        .optionValue(ov)
-                        .build();
-
-                // ⚠️ Kiểm tra variant đã tồn tại chưa
-                Variant exists = variantService.findVariantFromProduct(variantEntity);
-                if (exists == null)continue;
-
-                variantEntities.add(variantEntity);
-            }
-        }
-
-        // 🔟 Lưu các variant mới
         if (!variantEntities.isEmpty()) {
             variantService.createListVariant(variantEntities);
-        }
+        }    
 
         return productMapper.toDto(createdProduct);
     }

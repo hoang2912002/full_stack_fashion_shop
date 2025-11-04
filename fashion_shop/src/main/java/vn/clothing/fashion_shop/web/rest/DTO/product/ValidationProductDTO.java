@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.clothing.fashion_shop.domain.Category;
 import vn.clothing.fashion_shop.domain.Manufacture;
-import vn.clothing.fashion_shop.domain.OptionValue;
 import vn.clothing.fashion_shop.web.validation.product.ProductMatching;
 
 @Getter
@@ -39,9 +38,10 @@ public class ValidationProductDTO {
     @Setter
     @Builder
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class InnerVariant {
         private String skuId;
-        private List<OptionValue> optionValues;
+        private List<String> optionValues;
         private Double price;
         private int stock;
         private String thumbnail;

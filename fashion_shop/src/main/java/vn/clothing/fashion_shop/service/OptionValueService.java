@@ -3,7 +3,6 @@ package vn.clothing.fashion_shop.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -84,6 +83,10 @@ public class OptionValueService {
             this.optionValueRepository.findBySlugAndIdNot(slug,checkId) 
         ;
         return opValue.isPresent() ? opValue.get() : null;
+    }
+
+    public List<OptionValue> getRawListOptionValueBySlug(List<String> slugs){
+        return this.optionValueRepository.findAllBySlugIn(slugs);
     }
 
     public OptionValue getRawOptionValueById(Long id){

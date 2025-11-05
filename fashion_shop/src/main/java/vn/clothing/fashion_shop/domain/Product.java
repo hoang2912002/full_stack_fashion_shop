@@ -1,9 +1,8 @@
 package vn.clothing.fashion_shop.domain;
 
-import java.time.Instant;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -65,10 +64,10 @@ public class Product extends AbstractAuditingEntity {
     private Category category;
 
     @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
-    @JsonIgnore
+    @JsonManagedReference
     List<ProductSku> productSkus;
 
     @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
-    @JsonIgnore
+    @JsonManagedReference
     List<Variant> variants;
 }

@@ -18,10 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.clothing.fashion_shop.constants.util.ConvertPagination;
 import vn.clothing.fashion_shop.constants.util.SlugUtil;
 import vn.clothing.fashion_shop.domain.Category;
+import vn.clothing.fashion_shop.domain.Option;
 import vn.clothing.fashion_shop.domain.OptionValue;
 import vn.clothing.fashion_shop.domain.Product;
 import vn.clothing.fashion_shop.domain.ProductSku;
 import vn.clothing.fashion_shop.domain.Variant;
+import vn.clothing.fashion_shop.mapper.OptionMapper;
+import vn.clothing.fashion_shop.mapper.OptionValueMapper;
 import vn.clothing.fashion_shop.mapper.ProductMapper;
 import vn.clothing.fashion_shop.repository.ProductRepository;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
@@ -35,6 +38,8 @@ public class ProductService {
     private final ProductSkuService productSkuService;
     private final VariantService variantService;
     private final ProductMapper productMapper;
+    private final OptionMapper optionMapper;
+    private final OptionValueMapper optionValueMapper;
     private final OptionValueService optionValueService;
 
     public ProductService(
@@ -43,13 +48,17 @@ public class ProductService {
             ProductSkuService productSkuService,
             VariantService variantService,
             ProductMapper productMapper,
-            OptionValueService optionValueService
+            OptionValueService optionValueService,
+            OptionMapper optionMapper,
+            OptionValueMapper optionValueMapper
         ) {
         this.productRepository = productRepository;
         this.categoryService = categoryService;
         this.productSkuService = productSkuService;
         this.variantService = variantService;
         this.productMapper = productMapper;
+        this.optionMapper = optionMapper;
+        this.optionValueMapper = optionValueMapper;
         this.optionValueService = optionValueService;
     }
 
@@ -159,6 +168,22 @@ public class ProductService {
         Page<Product> products = this.productRepository.findAll(spec, pageable);
         List<GetProductDTO> listProducts = productMapper.toDto(products.getContent());
         return ConvertPagination.handleConvert(pageable, products, listProducts);
+    }
+    public GetProductDTO getProductById(Long id){
+        Product product = findRawProductById(id);
+        if(product == null){
+            throw new RuntimeException("Sản phẩm với id: " + product.getId() + " không tồn tại");
+        }
+        List<Option> options = product.getVariants().stream()
+            .map(o -> o.getOption()).distinct().collect(Collectors.toList()); 
+        List<OptionValue> optionValues = product.getVariants().stream()
+            .map(o -> o.getOptionValue()).distinct().collect(Collectors.toList()); 
+        
+        GetProductDTO dto = productMapper.detailDto(product);
+        dto.setOptions(optionMapper.toMiniDto(options));
+        dto.setOptionValues(optionValueMapper.toMiniDto(optionValues));
+
+        return dto;
     }
     public Product findRawProductBySlug(String slug, Long checkId) {
         Optional<Product> productOptional = checkId != null ? this.productRepository.findBySlugAndIdNot(slug,checkId) :  this.productRepository.findBySlug(slug);

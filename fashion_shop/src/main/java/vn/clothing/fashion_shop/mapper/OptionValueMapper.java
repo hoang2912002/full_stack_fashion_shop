@@ -2,11 +2,13 @@ package vn.clothing.fashion_shop.mapper;
 
 import java.util.List;
 
+import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import vn.clothing.fashion_shop.domain.OptionValue;
-import vn.clothing.fashion_shop.domain.Product;
+import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO.InnerOptionValueDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.optionValue.GetOptionValueDTO;
 
 //componentModel = "spring" giúp Spring tự inject mapper qua @Autowired.
@@ -42,9 +44,20 @@ import vn.clothing.fashion_shop.web.rest.DTO.optionValue.GetOptionValueDTO;
 public interface OptionValueMapper extends EntityMapper<GetOptionValueDTO, OptionValue> {
     OptionValueMapper INSTANCE = Mappers.getMapper(OptionValueMapper.class);
 
-    // Map từ Entity sang DTO
+    @Named("toDto")
     GetOptionValueDTO toDto(OptionValue entity);
+
+    @IterableMapping(qualifiedByName = "toDto")
     List<GetOptionValueDTO> toDto(List<OptionValue> optionValues);
+
+    @Named("toMiniDto")
+    InnerOptionValueDTO toMiniDto(OptionValue optionValue);
+
+    @Named("toMiniDto")
+    @IterableMapping(qualifiedByName = "toMiniDto")
+    List<InnerOptionValueDTO> toMiniDto(List<OptionValue> optionValues);
+
+
 
     // Map từ DTO sang Entity
     OptionValue toEntity(GetOptionValueDTO dto);

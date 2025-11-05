@@ -28,6 +28,16 @@ public class GetOptionDTO {
     @NoArgsConstructor
     public static class InnerOptionValueDTO {
         private Long id;
+        private String value;
+        private String slug;
+        
+    }
+
+    @Setter
+    @Getter
+    @NoArgsConstructor
+    public static class InnerOptionDTO {
+        private Long id;
         private String name;
         private String slug;
         

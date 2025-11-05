@@ -56,10 +56,10 @@ public class ProductController {
 
     @GetMapping("/{id}")
     @ApiMessageResponse("Lấy sản phẩm theo id thành công")
-    public ResponseEntity<Product> getProductById(
+    public ResponseEntity<GetProductDTO> getProductById(
         @PathVariable("id") Long id
     ) {
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(this.productService.getProductById(id));
     }
 
     @GetMapping("")

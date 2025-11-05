@@ -9,8 +9,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.clothing.fashion_shop.domain.Manufacture;
-import vn.clothing.fashion_shop.domain.ProductSku;
 import vn.clothing.fashion_shop.web.rest.DTO.category.GetCategoryDTO.InnerGetCategoryDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO.InnerOptionDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.productSku.GetProductSkuDTO.InnerProductSkuDTO;
 
 @Getter
 @Setter
@@ -32,5 +34,8 @@ public class GetProductDTO {
     private String createdBy;
     private String updatedBy;
 
-    private List<ProductSku> productSkus;
+    private List<InnerProductSkuDTO> productSkus;
+
+    private List<InnerOptionDTO> options;
+    private List<GetOptionDTO.InnerOptionValueDTO> optionValues;
 }

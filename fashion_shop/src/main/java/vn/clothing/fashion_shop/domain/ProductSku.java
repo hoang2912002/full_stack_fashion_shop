@@ -1,9 +1,9 @@
 package vn.clothing.fashion_shop.domain;
 
-import java.time.Instant;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -51,9 +51,10 @@ public class ProductSku extends AbstractAuditingEntity{
 
     @ManyToOne()
     @JoinColumn(name = "product_id")
+    @JsonBackReference
     private Product product;
 
     @OneToMany( mappedBy = "sku", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
-    @JsonIgnore
+    @JsonManagedReference
     List<Variant> variants;
 }

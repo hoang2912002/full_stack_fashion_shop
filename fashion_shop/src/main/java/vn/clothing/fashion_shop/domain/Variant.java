@@ -1,6 +1,7 @@
 package vn.clothing.fashion_shop.domain;
 
-import java.time.Instant;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -40,18 +41,22 @@ public class Variant extends AbstractAuditingEntity{
 
     @ManyToOne()
     @JoinColumn(name = "product_id")
+    @JsonBackReference
     private Product product;
     
     @ManyToOne()
     @JoinColumn(name = "sku_id")
+    @JsonBackReference
     private ProductSku sku;
 
     @ManyToOne()
     @JoinColumn(name = "option_id")
+    @JsonManagedReference
     private Option option;
 
     @ManyToOne()
     @JoinColumn(name = "option_value_id")
+    @JsonManagedReference
     private OptionValue optionValue;
 
 }

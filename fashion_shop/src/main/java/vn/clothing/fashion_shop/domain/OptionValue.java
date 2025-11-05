@@ -1,9 +1,9 @@
 package vn.clothing.fashion_shop.domain;
 
-import java.time.Instant;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -48,10 +48,11 @@ public class OptionValue extends AbstractAuditingEntity{
     // private String updatedBy;
 
     @OneToMany( mappedBy = "optionValue", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
-    @JsonIgnore
+    @JsonBackReference
     List<Variant> variants;
 
     @ManyToOne()
     @JoinColumn(name = "option_id")
+    @JsonManagedReference
     private Option option;
 }

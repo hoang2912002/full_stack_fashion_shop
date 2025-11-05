@@ -18,9 +18,23 @@ public class GetProductSkuDTO {
     private String sku;
     private Double price;
     private Integer stock;
+    private String thumbnail;
     private boolean activated;
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class InnerProductSkuDTO{
+        private Long id;
+        private String sku;
+        private Double price;
+        private Integer stock;
+        private String thumbnail;
+    }
 }

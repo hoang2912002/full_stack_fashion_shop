@@ -9,7 +9,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
-import vn.clothing.fashion_shop.constants.GenderEnum;
+import vn.clothing.fashion_shop.constants.enumEntity.GenderEnum;
 import vn.clothing.fashion_shop.domain.Address;
 import vn.clothing.fashion_shop.domain.Role;
 import vn.clothing.fashion_shop.web.validation.user.UserMatching;

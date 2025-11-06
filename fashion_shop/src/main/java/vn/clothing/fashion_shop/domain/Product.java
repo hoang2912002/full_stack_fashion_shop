@@ -1,7 +1,9 @@
 package vn.clothing.fashion_shop.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -12,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -59,15 +62,19 @@ public class Product extends AbstractAuditingEntity {
     @JoinColumn(name = "manufacture_id")
     private Manufacture manufacture;
 
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 
     @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonManagedReference
-    List<ProductSku> productSkus;
+    List<ProductSku> productSkus = new ArrayList<>();
 
     @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonManagedReference
-    List<Variant> variants;
+    List<Variant> variants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @JsonBackReference
+    private List<PromotionProduct> promotionProducts = new ArrayList<>();
 }

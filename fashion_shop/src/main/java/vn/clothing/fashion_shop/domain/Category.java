@@ -1,15 +1,12 @@
 package vn.clothing.fashion_shop.domain;
 
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.annotations.Where;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -47,10 +44,6 @@ public class Category extends AbstractAuditingEntity  {
     private String slug;
     private boolean activated;
     
-    // private Instant createdAt;
-    // private Instant updatedAt;
-    // private String createdBy;
-    // private String updatedBy;
     // 🔹 category cha
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
@@ -60,7 +53,7 @@ public class Category extends AbstractAuditingEntity  {
     // 🔹 danh sách category con
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     @JsonManagedReference
-    @Where(clause = "activated = true")
+    // @Where(clause = "activated = true")
 
     //@JsonIgnoreProperties: Khi serialize Category sang JSON, bỏ qua luôn 2 field children và parent.
     //Do mình để ở relationship cho nên là khi lấy children đầu tiên ra nó kèm theo điều kiện này nên chỉ lấy 1 cấp
@@ -71,4 +64,8 @@ public class Category extends AbstractAuditingEntity  {
     @OneToMany( mappedBy = "category", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore
     List<Product> products;
+
+    @OneToMany( mappedBy = "category", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @JsonBackReference
+    private List<PromotionProduct> promotionProducts = new ArrayList<>();
 }

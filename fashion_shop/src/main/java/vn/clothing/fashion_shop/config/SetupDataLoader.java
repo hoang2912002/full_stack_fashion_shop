@@ -7,22 +7,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import lombok.RequiredArgsConstructor;
-import vn.clothing.fashion_shop.constants.GenderEnum;
+import vn.clothing.fashion_shop.constants.enumEntity.GenderEnum;
 import vn.clothing.fashion_shop.constants.util.SlugUtil;
 import vn.clothing.fashion_shop.constants.util.SplitCamelCase;
 import vn.clothing.fashion_shop.domain.Permission;
@@ -31,7 +26,6 @@ import vn.clothing.fashion_shop.domain.User;
 import vn.clothing.fashion_shop.repository.PermissionRepository;
 import vn.clothing.fashion_shop.repository.RoleRepository;
 import vn.clothing.fashion_shop.repository.UserRepository;
-import vn.clothing.fashion_shop.web.rest.DTO.permission.GetPermissionDTO;
 
 /*
  * GIẢI THÍCH CÁCH HOẠT ĐỘNG

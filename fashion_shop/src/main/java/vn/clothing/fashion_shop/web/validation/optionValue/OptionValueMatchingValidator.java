@@ -1,15 +1,23 @@
 package vn.clothing.fashion_shop.web.validation.optionValue;
 
+import org.springframework.stereotype.Component;
+
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.RequiredArgsConstructor;
+import vn.clothing.fashion_shop.constants.util.MessageUtil;
 import vn.clothing.fashion_shop.web.rest.DTO.optionValue.ValidationOptionValueDTO;
-
+@Component
+@RequiredArgsConstructor
 public class OptionValueMatchingValidator implements ConstraintValidator<OptionValueMatching, ValidationOptionValueDTO> {
+    private final MessageUtil messageUtil;
     @Override
     public boolean isValid(ValidationOptionValueDTO value, ConstraintValidatorContext context) {
         boolean valid = true;
-        if(value.getValue().trim() == ""){
-            addViolation(context, "Gía trị option không được để trống", "value");
+        if(value.getValue() == null || value.getValue().trim().isEmpty()){
+            addViolation(context, 
+            messageUtil.getMessage("option.value.value.notnull")
+            , "value");
             valid = false;
         }
         return valid;

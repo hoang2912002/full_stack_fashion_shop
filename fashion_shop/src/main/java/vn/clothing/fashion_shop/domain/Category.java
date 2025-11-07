@@ -59,13 +59,13 @@ public class Category extends AbstractAuditingEntity  {
     //Do mình để ở relationship cho nên là khi lấy children đầu tiên ra nó kèm theo điều kiện này nên chỉ lấy 1 cấp
     // @JsonIgnoreProperties({"children", "parent"})  // bỏ qua children cấp 2 trở đi
     private Set<Category> children = new HashSet<>();
-    // private List<Category> children;
 
     @OneToMany( mappedBy = "category", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonIgnore
     List<Product> products;
 
+    //Do đang dùng đệ quy cho nên phải JsonIgnore đến bảng khác để tránh loop
     @OneToMany( mappedBy = "category", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
-    @JsonBackReference
-    private List<PromotionProduct> promotionProducts = new ArrayList<>();
+    @JsonIgnore
+    List<PromotionProduct> promotionProducts = new ArrayList<>();
 }

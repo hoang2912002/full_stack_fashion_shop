@@ -3,12 +3,12 @@ package vn.clothing.fashion_shop.web.rest.DTO.optionValue;
 import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vn.clothing.fashion_shop.domain.Option;
 import vn.clothing.fashion_shop.web.validation.optionValue.OptionValueMatching;
 
 @Setter
@@ -29,5 +29,9 @@ public class ValidationOptionValueDTO {
     @JsonProperty("isCreate")
     private boolean isCreate;
 
-    private Option option;
+    private InnerOptionValueDTO option;
+
+    public static class InnerOptionValueDTO{
+        private Long id;
+    }
 }

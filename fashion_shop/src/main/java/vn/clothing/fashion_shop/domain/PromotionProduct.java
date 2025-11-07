@@ -1,6 +1,7 @@
 package vn.clothing.fashion_shop.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -44,6 +45,6 @@ public class PromotionProduct extends AbstractAuditingEntity {
     
     @ManyToOne()
     @JoinColumn(name = "category_id")
-    @JsonBackReference
+        @JsonBackReference
     private Category category;
 }

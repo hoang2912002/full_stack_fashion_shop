@@ -3,7 +3,6 @@ package vn.clothing.fashion_shop.config;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -11,6 +10,8 @@ import org.springframework.web.servlet.HandlerMapping;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import vn.clothing.fashion_shop.constants.util.MessageUtil;
 import vn.clothing.fashion_shop.domain.Permission;
 import vn.clothing.fashion_shop.domain.Role;
 import vn.clothing.fashion_shop.domain.User;
@@ -19,11 +20,12 @@ import vn.clothing.fashion_shop.service.UserService;
 import vn.clothing.fashion_shop.web.rest.errors.PermissionException;
 
 @Component
+@RequiredArgsConstructor
 public class PermissionInterceptor implements HandlerInterceptor {
 
-    @Autowired
-    private UserService userService;
-
+    private final UserService userService;
+    private final MessageUtil messageUtil;
+    
     @Override
     @Transactional
     public boolean preHandle(
@@ -46,11 +48,11 @@ public class PermissionInterceptor implements HandlerInterceptor {
                         m -> m.getApiPath().equals(path) && m.getMethod().equals(httpMethod)
                     );
                     if(!checkPermission){
-                        throw new PermissionException("Bạn không có quyền truy cập vào đây");
+                        throw new PermissionException(messageUtil.getMessage("interceptor.permission.deny"));
                     }
                 }
                 else{
-                    throw new PermissionException("Bạn không có quyền truy cập vào đây");
+                    throw new PermissionException(messageUtil.getMessage("interceptor.permission.deny"));
                 }
             }
         }

@@ -28,6 +28,7 @@ public class ValidationCategoryDTO {
     private String updatedBy;
     private Instant updatedAt;
     private boolean activated;
+    // private List<PromotionProduct> promotionProducts;
     @JsonProperty("isCreate")
     private boolean isCreate;
 }

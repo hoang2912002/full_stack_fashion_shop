@@ -75,6 +75,6 @@ public class Product extends AbstractAuditingEntity {
     List<Variant> variants = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
-    @JsonBackReference
-    private List<PromotionProduct> promotionProducts = new ArrayList<>();
+    @JsonManagedReference
+    List<PromotionProduct> promotionProducts = new ArrayList<>();
 }

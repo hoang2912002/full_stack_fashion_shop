@@ -4,12 +4,17 @@ package vn.clothing.fashion_shop.web.validation.Login;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.stereotype.Component;
+
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.RequiredArgsConstructor;
+import vn.clothing.fashion_shop.constants.util.MessageUtil;
 import vn.clothing.fashion_shop.web.rest.DTO.authenticate.LoginDTO;
-
+@Component
+@RequiredArgsConstructor
 public class LoginMatchingValidator  implements ConstraintValidator<LoginMatching, LoginDTO> {
-
+    private final MessageUtil messageUtil;
     @Override
     public boolean isValid(LoginDTO value, ConstraintValidatorContext context) {
         boolean valid = true;
@@ -20,20 +25,28 @@ public class LoginMatchingValidator  implements ConstraintValidator<LoginMatchin
         Matcher matcherPassword = passwordPattern.matcher(value.getPassword());
 
 
-        if(value.getUsername().trim() == ""){
-            addViolation(context, "Username không được bỏ trống", "username");
+        if(value.getUsername() == null || value.getUsername().trim().isEmpty()){
+            addViolation(context, 
+            messageUtil.getMessage("user.email.notnull")
+            , "username");
             valid = false;
         }
         if(!matcher.matches()){
-            addViolation(context, "Username không đúng định dạng", "username");
+            addViolation(context, 
+            messageUtil.getMessage("user.email.notformat")
+            , "username");
             valid = false;
         }
-        if(value.getPassword().isBlank()){
-            addViolation(context, "Mật khẩu không được bỏ trống", "password");
+        if(value.getPassword() == null || value.getPassword().trim().isEmpty()){
+            addViolation(context, 
+            messageUtil.getMessage("user.password.notnull")
+            , "password");
             valid = false;
         }
         if(!matcherPassword.matches()){
-            addViolation(context, "Mật khẩu bao gồm ít nhất 6 ký tự", "password");
+            addViolation(context, 
+            messageUtil.getMessage("user.password.limit")
+            , "password");
             valid = false;
         }
 

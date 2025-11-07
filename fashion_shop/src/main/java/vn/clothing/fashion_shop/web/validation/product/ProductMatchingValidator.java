@@ -4,23 +4,19 @@ import org.springframework.stereotype.Component;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import lombok.RequiredArgsConstructor;
-import vn.clothing.fashion_shop.constants.util.MessageUtil;
 import vn.clothing.fashion_shop.web.rest.DTO.product.ValidationProductDTO;
 @Component
-@RequiredArgsConstructor
 public class ProductMatchingValidator implements ConstraintValidator<ProductMatching, ValidationProductDTO>  {
-    private final MessageUtil messageUtil;
     @Override
     public boolean isValid(ValidationProductDTO value, ConstraintValidatorContext context) {
         boolean valid = true;
         if(value.getName() == null || value.getName().trim().isEmpty()){
-            addViolation(context, messageUtil.getMessage("product.name.notnull"), "name");
+            addViolation(context,"product.name.notnull", "name");
             valid = false;
         }
         
         if(value.getPrice() == null){
-            addViolation(context, messageUtil.getMessage("product.price.notnull"), "price");
+            addViolation(context, "product.price.notnull", "price");
             valid = false;
         }
         // if(value.getPrice() instanceof Number){
@@ -29,11 +25,11 @@ public class ProductMatchingValidator implements ConstraintValidator<ProductMatc
         // }
 
         if(value.getQuantity() < 0){
-            addViolation(context, messageUtil.getMessage("product.quantity.limit"), "quantity");
+            addViolation(context, "product.quantity.limit", "quantity");
             valid = false;
         }
         if(value.getCategory().getId() == null){
-            addViolation(context, messageUtil.getMessage("product.categoryid.notnull"), "category");
+            addViolation(context, "product.categoryid.notnull", "category");
             valid = false;
         }
         // if(!value.getVariants().isEmpty()){
@@ -41,7 +37,7 @@ public class ProductMatchingValidator implements ConstraintValidator<ProductMatc
         // }
         if(!value.isCreate()){
             if(value.getId() == null && value.getId() instanceof Long == false){
-                addViolation(context, messageUtil.getMessage("product.id.notnull"), "id");
+                addViolation(context, "product.id.notnull", "id");
                 valid = false;
             }
 

@@ -7,39 +7,36 @@ import org.springframework.stereotype.Component;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import lombok.RequiredArgsConstructor;
-import vn.clothing.fashion_shop.constants.util.MessageUtil;
 import vn.clothing.fashion_shop.web.rest.DTO.user.ValidationUserDTO;
 @Component
-@RequiredArgsConstructor
 public class UserMatchingValidator implements ConstraintValidator<UserMatching, ValidationUserDTO> {
-    private final MessageUtil messageUtil;
+    
     @Override
     public boolean isValid(ValidationUserDTO value, ConstraintValidatorContext context) {
         boolean valid = true;
 
         if (value.getFullName() == null || value.getFullName().trim().isEmpty()) {
-            addViolation(context, messageUtil.getMessage("user.fullname.notnull"), "fullName");
+            addViolation(context, "user.fullname.notnull", "fullName");
             valid = false;
         }
         if (value.getAge() == null) {
-            addViolation(context, messageUtil.getMessage("user.age.notnull"), "age");
+            addViolation(context, "user.age.notnull", "age");
             valid = false;
         }
         if (value.isCreate()) {
             if (value.getEmail() == null || value.getEmail().isEmpty()) {
-                addViolation(context, messageUtil.getMessage("user.email.notnull"), "email");
+                addViolation(context, "user.email.notnull", "email");
                 valid = false;
             } else {
                 Pattern p = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
                 Matcher matcher = p.matcher(value.getEmail());
                 if (!matcher.matches()) {
-                    addViolation(context, messageUtil.getMessage("user.email.notformat"), "email");
+                    addViolation(context, "user.email.notformat", "email");
                     valid = false;
                 }
             }
             if (value.getPassword() == null || value.getPassword().isEmpty()) {
-                addViolation(context, messageUtil.getMessage("user.password.notnull"), "password");
+                addViolation(context, "user.password.notnull", "password");
                 valid = false;
             } else {
                 Pattern passwordPattern = Pattern.compile("^.{6,}$");
@@ -47,13 +44,13 @@ public class UserMatchingValidator implements ConstraintValidator<UserMatching, 
                         .matcher(value.getPassword() != null ? value.getPassword() : "");
 
                 if (!matcherPassword.matches()) {
-                    addViolation(context, messageUtil.getMessage("user.password.limit"), "password");
+                    addViolation(context, "user.password.limit", "password");
                     valid = false;
                 }
             }
         } else {
             if (value.getId() == null) {
-                addViolation(context, messageUtil.getMessage("user.id.notnull"), "id");
+                addViolation(context, "user.id.notnull", "id");
                 valid = false;
             }
         }

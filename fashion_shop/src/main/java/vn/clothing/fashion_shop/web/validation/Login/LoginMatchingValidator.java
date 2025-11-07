@@ -8,13 +8,9 @@ import org.springframework.stereotype.Component;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import lombok.RequiredArgsConstructor;
-import vn.clothing.fashion_shop.constants.util.MessageUtil;
 import vn.clothing.fashion_shop.web.rest.DTO.authenticate.LoginDTO;
 @Component
-@RequiredArgsConstructor
 public class LoginMatchingValidator  implements ConstraintValidator<LoginMatching, LoginDTO> {
-    private final MessageUtil messageUtil;
     @Override
     public boolean isValid(LoginDTO value, ConstraintValidatorContext context) {
         boolean valid = true;
@@ -27,25 +23,25 @@ public class LoginMatchingValidator  implements ConstraintValidator<LoginMatchin
 
         if(value.getUsername() == null || value.getUsername().trim().isEmpty()){
             addViolation(context, 
-            messageUtil.getMessage("user.email.notnull")
+            "user.email.notnull"
             , "username");
             valid = false;
         }
         if(!matcher.matches()){
             addViolation(context, 
-            messageUtil.getMessage("user.email.notformat")
+            "user.email.notformat"
             , "username");
             valid = false;
         }
         if(value.getPassword() == null || value.getPassword().trim().isEmpty()){
             addViolation(context, 
-            messageUtil.getMessage("user.password.notnull")
+            "user.password.notnull"
             , "password");
             valid = false;
         }
         if(!matcherPassword.matches()){
             addViolation(context, 
-            messageUtil.getMessage("user.password.limit")
+            "user.password.limit"
             , "password");
             valid = false;
         }

@@ -34,20 +34,16 @@ public class FormatWrapperAdvice implements ResponseBodyAdvice<Object> {
     ) {
         HttpServletResponse servletResponse = ((ServletServerHttpResponse) response).getServletResponse();
         int status = servletResponse.getStatus();
-        ApiResponse<Object> res = new ApiResponse<>();
-        res.setStatus(status);
+        ApiMessageResponse messageResponse = returnType.getMethodAnnotation(ApiMessageResponse.class);
+        String message = messageResponse != null ? messageResponse.value() : "CALL API SUCCESS";
+
         if(body == null || body instanceof ApiResponse || body instanceof String){
             return body;
         }
         if(status >= 400){
             return body;
         }
-        else{
-            res.setData(body);
-            ApiMessageResponse messageResponse = returnType.getMethodAnnotation(ApiMessageResponse.class);
-            res.setMessage(messageResponse != null ? messageResponse.value() : "CALL API SUCCESS");
-        }
-        return res;
+        return ApiResponse.success(message,body);
     }
     
 }

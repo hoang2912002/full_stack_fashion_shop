@@ -4,24 +4,20 @@ import org.springframework.stereotype.Component;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import lombok.RequiredArgsConstructor;
-import vn.clothing.fashion_shop.constants.util.MessageUtil;
 import vn.clothing.fashion_shop.web.rest.DTO.role.ValidationRoleDTO;
 @Component
-@RequiredArgsConstructor
 public class RoleMatchingValidator implements ConstraintValidator<RoleMatching, ValidationRoleDTO> {
-    private final MessageUtil messageUtil;
     @Override
     public boolean isValid(ValidationRoleDTO value, ConstraintValidatorContext context) {
         boolean valid = true;
         if(value.getName() == null || value.getName().trim().isEmpty()){
-            addViolation(context, messageUtil.getMessage("role.permission.name.notnull"), "name");
+            addViolation(context, "role.permission.name.notnull", "name");
             valid = false;
         }
 
         if(!value.isCreate()){
             if(value.getId() == null && value.getId() instanceof Long == false){
-                addViolation(context, messageUtil.getMessage("role.id.notnull"), "id");
+                addViolation(context, "role.id.notnull", "id");
                 valid = false;
             }
 

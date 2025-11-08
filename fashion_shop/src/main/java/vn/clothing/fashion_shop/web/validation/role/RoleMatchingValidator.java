@@ -4,11 +4,11 @@ import org.springframework.stereotype.Component;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import vn.clothing.fashion_shop.web.rest.DTO.role.ValidationRoleDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.RoleRequest;
 @Component
-public class RoleMatchingValidator implements ConstraintValidator<RoleMatching, ValidationRoleDTO> {
+public class RoleMatchingValidator implements ConstraintValidator<RoleMatching, RoleRequest> {
     @Override
-    public boolean isValid(ValidationRoleDTO value, ConstraintValidatorContext context) {
+    public boolean isValid(RoleRequest value, ConstraintValidatorContext context) {
         boolean valid = true;
         if(value.getName() == null || value.getName().trim().isEmpty()){
             addViolation(context, "role.permission.name.notnull", "name");

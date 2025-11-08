@@ -66,10 +66,10 @@ public class GlobalException {
 
         // Lấy EnumError từ exception
         EnumError enumError = ex.getEnumError();
-
+        Object args = ex.getParams() != null ? ex.getParams().values().toString() : new Object[]{};
         ApiResponse<Object> res = ApiResponse.builder()
             .status(enumError.getHttpStatus().value())
-            .message(messageUtil.getMessage(ex.getMessageCode(), locale))
+            .message(messageUtil.getMessage(ex.getMessageCode(), args,locale))
             .language(locale.getLanguage())
             .errorCode(ex.getMessageCode())
             .params(ex.getParams())

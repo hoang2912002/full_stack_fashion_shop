@@ -1,11 +1,13 @@
 package vn.clothing.fashion_shop.web.rest.DTO.responses;
 
 import java.time.Instant;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PermissionResponse.InnerPermissionResponse;
 
 @Data
 @AllArgsConstructor
@@ -20,7 +22,7 @@ public class RoleResponse {
     private String updatedBy;
     private Instant createdAt;
     private Instant updatedAt;
-    // private List<InnerPermissionRoleDTO> permissions;
+    private List<InnerPermissionResponse> permissions;
 
     @Data
     @AllArgsConstructor

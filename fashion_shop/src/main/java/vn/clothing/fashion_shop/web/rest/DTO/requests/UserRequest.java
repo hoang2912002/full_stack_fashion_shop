@@ -11,8 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import vn.clothing.fashion_shop.constants.enumEntity.GenderEnum;
-import vn.clothing.fashion_shop.domain.Address;
-import vn.clothing.fashion_shop.domain.Role;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.AddressRequest.InnerAddressRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.RoleRequest.InnerRoleRequest;
 
 @NoArgsConstructor
 @Data
@@ -26,8 +26,8 @@ public class UserRequest {
     private GenderEnum gender;
     private Instant dob;
     private Integer age;
-    private Role role;
-    private List<Address> addresses;
+    private InnerRoleRequest role;
+    private List<InnerAddressRequest> addresses;
     private boolean activated;
     private Instant createdAt;
     private Instant updatedAt;

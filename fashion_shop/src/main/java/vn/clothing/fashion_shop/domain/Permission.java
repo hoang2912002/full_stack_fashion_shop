@@ -14,14 +14,12 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "permissions")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -40,11 +38,6 @@ public class Permission extends AbstractAuditingEntity  {
     private String method;
     private String module;
     private boolean activated;
-
-    // private Instant createdAt;
-    // private Instant updatedAt;
-    // private String createdBy;
-    // private String updatedBy;
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "permissions")
     @JsonIgnore

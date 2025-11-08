@@ -6,13 +6,13 @@ import org.springframework.stereotype.Component;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import vn.clothing.fashion_shop.web.rest.DTO.permission.ValidationPermissionDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.PermissionRequest;
 
 @Component
-public class PermissionMatchingValidator implements ConstraintValidator<PermissionMatching, ValidationPermissionDTO> {
+public class PermissionMatchingValidator implements ConstraintValidator<PermissionMatching, PermissionRequest> {
 
     @Override
-    public boolean isValid(ValidationPermissionDTO value, ConstraintValidatorContext context) {
+    public boolean isValid(PermissionRequest value, ConstraintValidatorContext context) {
         boolean valid = true;
         List<String> methods = List.of("POST","PUT","PATCH","GET","DELETE");
         if(value.getApiPath() == null || value.getApiPath().trim().isEmpty()){

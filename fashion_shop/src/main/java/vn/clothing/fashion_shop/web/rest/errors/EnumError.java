@@ -16,6 +16,10 @@ public enum EnumError {
     ROLE_DATA_EXISTED_NAME("ROLE-DTE-NAME","Role already exists with the given Name:",HttpStatus.CONFLICT),
     ROLE_ERR_NOT_FOUND_ID("ROLE-CATE_NF","Not found role with id:",HttpStatus.BAD_REQUEST),
     
+    //----------------Role-------------------
+    PERMISSION_DATA_EXISTED_APIPATH("PERMISSION-DTE-APIPATH","Permission already exists with the given Api path:",HttpStatus.CONFLICT),
+    PERMISSION_ERR_NOT_FOUND_ID("PERMISSION-CATE_NF","Not found permission with id:",HttpStatus.BAD_REQUEST),
+
     //----------------Server-------------------
     INTERNAL_ERROR("ACC-S-999", "Unexpected internal server error", HttpStatus.INTERNAL_SERVER_ERROR)
     ;

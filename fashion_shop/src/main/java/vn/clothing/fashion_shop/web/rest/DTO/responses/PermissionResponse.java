@@ -17,7 +17,7 @@ public class PermissionResponse {
     private String createdBy;
     private Instant createdAt;
     private String updatedBy;
-    private Instant updateAt;
+    private Instant updatedAt;
     private boolean activated;
 
     @NoArgsConstructor

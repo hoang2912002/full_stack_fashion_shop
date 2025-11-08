@@ -13,84 +13,20 @@ import vn.clothing.fashion_shop.constants.util.ConvertPagination;
 import vn.clothing.fashion_shop.domain.Permission;
 import vn.clothing.fashion_shop.repository.PermissionRepository;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.permission.CreatePermissionDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.permission.GetPermissionResDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.permission.UpdatePermissionDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PermissionResponse;
 
-@Service
-public class PermissionService {
-    private PermissionRepository permissionRepository;
+public interface PermissionService {
+    List<Permission> getPermissionByListId(List<Long> listId);
 
-    public PermissionService(PermissionRepository permissionRepository) {
-        this.permissionRepository = permissionRepository;
-    }
+    PermissionResponse createPermission(Permission permission);
 
-    public List<Permission> getPermissionByListId(List<Long> listId){
-        List<Permission> lPermissions = this.permissionRepository.findAllByIdIn(listId);
-        return lPermissions.size() > 0 ? lPermissions : null;
-    }
+    PermissionResponse updatePermission(Permission permission);
 
-    public CreatePermissionDTO createPermission(Permission permission){
-        String method = permission.getMethod().toUpperCase();
-        String module = permission.getModule().toUpperCase();
-        if(checkPermissionExist(permission.getApiPath(), method, null)){
-            throw new RuntimeException("Quyền hạn của chức năng này đã tồn tại");
-        }
-        Permission createPermission = new Permission();
-        BeanUtils.copyProperties(permission, createPermission);
-        createPermission.setMethod(method);
-        createPermission.setModule(module);
-        createPermission.setActivated(true);
-        createPermission = this.permissionRepository.saveAndFlush(createPermission);
-        CreatePermissionDTO permissionDTO = new CreatePermissionDTO();
-        BeanUtils.copyProperties(createPermission, permissionDTO);
-        return permissionDTO;
-    }
+    PermissionResponse getPermissionById(Long id);
 
-    public UpdatePermissionDTO updatePermission(Permission permission){
-        Permission updatePermission = getRawPermissionById(permission.getId());
-        if(updatePermission == null){
-            throw new RuntimeException("Quyền hạng với id: " + permission.getId() + " không tồn tại");
-        }
-        updatePermission.setName(permission.getName());
-        updatePermission = this.permissionRepository.saveAndFlush(updatePermission);
+    PaginationDTO getAllPermission(Pageable pageable, Specification specification);
 
-        UpdatePermissionDTO updatePermissionDTO = new UpdatePermissionDTO();
-        BeanUtils.copyProperties(updatePermission, updatePermissionDTO);
-        return updatePermissionDTO;
-    }
+    boolean checkPermissionExist(String apiPath, String method, Long checkId);
 
-    public GetPermissionResDTO getPermissionById(Long id){
-        Permission permission = getRawPermissionById(id);
-        if(permission == null){
-            throw new RuntimeException("Quyền hạng với id: " + id + " không tồn tại");
-        }
-        GetPermissionResDTO getPermissionResDTO = new GetPermissionResDTO();
-        BeanUtils.copyProperties(permission, getPermissionResDTO);
-        return getPermissionResDTO;
-    }
-
-    public PaginationDTO getAllPermission(Pageable pageable, Specification specification){
-        Page<Permission> permissions = this.permissionRepository.findAll(specification, pageable);
-
-        List<GetPermissionResDTO> permissionResDTOs = permissions.getContent().stream().map(r -> {
-            GetPermissionResDTO permissionResDTO = new GetPermissionResDTO();
-            BeanUtils.copyProperties(r, permissionResDTO);
-            return permissionResDTO;
-        }).toList();
-
-        return ConvertPagination.handleConvert(pageable, permissions, permissionResDTOs);
-    }
-
-    public boolean checkPermissionExist(String apiPath, String method, Long checkId){
-        return checkId != null ? this.permissionRepository.existsByApiPathAndMethodAndIdNot(apiPath,method,checkId) : this.permissionRepository.existsByApiPathAndMethod(apiPath,method);
-    }
-
-    public Permission getRawPermissionById(Long id){
-        if(id == null){
-            throw new RuntimeException("Id không được để trống");
-        }
-        Optional<Permission> permission = this.permissionRepository.findById(id);
-        return permission.isPresent() ? permission.get() : null;
-    }
+    Permission getRawPermissionById(Long id);
 }

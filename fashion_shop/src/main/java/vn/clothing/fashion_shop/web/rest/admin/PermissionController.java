@@ -10,11 +10,8 @@ import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Permission;
 import vn.clothing.fashion_shop.service.PermissionService;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.permission.CreatePermissionDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.permission.GetPermissionDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.permission.GetPermissionResDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.permission.UpdatePermissionDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.permission.ValidationPermissionDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.PermissionRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PermissionResponse;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
@@ -44,8 +41,8 @@ public class PermissionController {
 
     @PostMapping("")
     @ApiMessageResponse("Thêm mới permission thành công")
-    public ResponseEntity<CreatePermissionDTO> createPermission(
-        @RequestBody @Valid ValidationPermissionDTO permission
+    public ResponseEntity<PermissionResponse> createPermission(
+        @RequestBody @Valid PermissionRequest permission
     ) {
         Permission createPermission = new Permission();
         BeanUtils.copyProperties(permission, createPermission);
@@ -54,8 +51,8 @@ public class PermissionController {
     
     @PutMapping("")
     @ApiMessageResponse("Cập nhật permission thành công")
-    public ResponseEntity<UpdatePermissionDTO> updatePermission(
-        @RequestBody @Valid ValidationPermissionDTO permission
+    public ResponseEntity<PermissionResponse> updatePermission(
+        @RequestBody @Valid PermissionRequest permission
     ) {
         Permission updatePermission = new Permission();
         BeanUtils.copyProperties(permission, updatePermission);
@@ -64,7 +61,7 @@ public class PermissionController {
 
     @GetMapping("/{id}")
     @ApiMessageResponse("Lấy permission theo id thành công")
-    public ResponseEntity<GetPermissionResDTO> getPermissionById(
+    public ResponseEntity<PermissionResponse> getPermissionById(
         @PathVariable("id") Long id
     ) {
         return ResponseEntity.ok(this.permissionService.getPermissionById(id));

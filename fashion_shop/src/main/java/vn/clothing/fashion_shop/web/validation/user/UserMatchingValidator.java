@@ -7,12 +7,12 @@ import org.springframework.stereotype.Component;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import vn.clothing.fashion_shop.web.rest.DTO.user.ValidationUserDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.UserRequest;
 @Component
-public class UserMatchingValidator implements ConstraintValidator<UserMatching, ValidationUserDTO> {
+public class UserMatchingValidator implements ConstraintValidator<UserMatching, UserRequest> {
     
     @Override
-    public boolean isValid(ValidationUserDTO value, ConstraintValidatorContext context) {
+    public boolean isValid(UserRequest value, ConstraintValidatorContext context) {
         boolean valid = true;
 
         if (value.getFullName() == null || value.getFullName().trim().isEmpty()) {

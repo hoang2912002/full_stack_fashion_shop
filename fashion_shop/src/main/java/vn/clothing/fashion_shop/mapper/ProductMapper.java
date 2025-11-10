@@ -9,8 +9,8 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import vn.clothing.fashion_shop.domain.Product;
-import vn.clothing.fashion_shop.web.rest.DTO.product.GetProductDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.product.ValidationProductDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.ProductRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductResponse;
 
 @Mapper(
     componentModel = "spring",
@@ -21,30 +21,29 @@ import vn.clothing.fashion_shop.web.rest.DTO.product.ValidationProductDTO;
         OptionValueMapper.class
     }
 )
-public interface ProductMapper extends EntityMapper<GetProductDTO, Product> {
+public interface ProductMapper extends EntityMapper<ProductResponse, Product> {
     ProductMapper INSTANCE = Mappers.getMapper(ProductMapper.class);
 
     @Named("toDto")
     @Mapping(target = "productSkus", ignore = true)
     @Mapping(target = "options", ignore = true)
     @Mapping(target = "optionValues", ignore = true)
-    // @Mapping(target= "price", numberFormat = "#,###")
     @Mapping(target = "price", expression = "java(String.format(\"%,.0f ₫\", product.getPrice()))")
-    GetProductDTO toDto(Product product);
+    ProductResponse toDto(Product product);
 
     //ép MapStruct chỉ dùng hàm
     @IterableMapping(qualifiedByName = "toDto")
-    List<GetProductDTO> toDto(List<Product> products);
+    List<ProductResponse> toDto(List<Product> products);
 
-    Product toEntity(GetProductDTO dto);
+    Product toEntity(ProductResponse dto);
 
     @Named("toDetailDto")
     @Mapping(target = "price", expression = "java(String.format(\"%,.0f ₫\", product.getPrice()))")
-    GetProductDTO detailDto(Product product);
+    ProductResponse detailDto(Product product);
 
     @Mapping(target = "variants", ignore = true)
     @Mapping(target = "productSkus", ignore = true)
     @Mapping(target = "activated", constant = "true")
-    Product toValidator(ValidationProductDTO dto);
+    Product toValidator(ProductRequest dto);
         
 }

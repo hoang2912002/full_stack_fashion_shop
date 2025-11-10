@@ -21,8 +21,8 @@ import vn.clothing.fashion_shop.domain.Product;
 import vn.clothing.fashion_shop.mapper.ProductMapper;
 import vn.clothing.fashion_shop.service.ProductService;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.product.GetProductDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.product.ValidationProductDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.ProductRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductResponse;
 
 @RestController
 @RequestMapping("/api/v1/admin/products")
@@ -38,25 +38,23 @@ public class ProductController {
 
     @PostMapping("")
     @ApiMessageResponse("Thêm sản phẩm thành công")
-    public ResponseEntity<GetProductDTO> createProduct(
-        @RequestBody @Valid ValidationProductDTO product
+    public ResponseEntity<ProductResponse> createProduct(
+        @RequestBody @Valid ProductRequest product
     ) {
-        Product createProduct = productMapper.toValidator(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.productService.createProduct(createProduct,product.getVariants()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.productService.createProduct(productMapper.toValidator(product),product.getVariants()));
     }
     
     @PutMapping("")
     @ApiMessageResponse("Cập nhật sản phẩm thành công")
-    public ResponseEntity<GetProductDTO> updateProduct(
-        @RequestBody @Valid ValidationProductDTO product
+    public ResponseEntity<ProductResponse> updateProduct(
+        @RequestBody @Valid ProductRequest product
     ) {
-        Product updateProduct = productMapper.toValidator(product);
-        return ResponseEntity.status(HttpStatus.OK).body(this.productService.updateProduct(updateProduct,product.getVariants()));
+        return ResponseEntity.status(HttpStatus.OK).body(this.productService.updateProduct(productMapper.toValidator(product),product.getVariants()));
     }
 
     @GetMapping("/{id}")
     @ApiMessageResponse("Lấy sản phẩm theo id thành công")
-    public ResponseEntity<GetProductDTO> getProductById(
+    public ResponseEntity<ProductResponse> getProductById(
         @PathVariable("id") Long id
     ) {
         return ResponseEntity.ok(this.productService.getProductById(id));

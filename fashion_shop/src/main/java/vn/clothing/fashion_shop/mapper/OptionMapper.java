@@ -8,8 +8,9 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import vn.clothing.fashion_shop.domain.Option;
-import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO.InnerOptionDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.OptionRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionResponse.InnerOptionResponse;
 
 
 @Mapper(
@@ -18,21 +19,22 @@ import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO.InnerOptionDTO;
         OptionValueMapper.class
     }
 )
-public interface OptionMapper extends EntityMapper<GetOptionDTO,Option> {
+public interface OptionMapper extends EntityMapper<OptionResponse,Option> {
     OptionMapper INSTANCE = Mappers.getMapper(OptionMapper.class);
 
     @Named("toDto")
-    GetOptionDTO toDto(Option option);
+    OptionResponse toDto(Option option);
 
     @IterableMapping(qualifiedByName = "toDto")
-    List<GetOptionDTO> toDto(List<Option> options);
+    List<OptionResponse> toDto(List<Option> options);
 
     @Named("toMiniDto")
-    InnerOptionDTO toMiniDto(Option option);
+    InnerOptionResponse toMiniDto(Option option);
 
     @Named("toMiniDto")
     @IterableMapping(qualifiedByName = "toMiniDto")
-    List<InnerOptionDTO> toMiniDto(List<Option> option);
-
-    Option toEntity(GetOptionDTO dto);
+    List<InnerOptionResponse> toMiniDto(List<Option> option);
+    
+    Option toValidator(OptionRequest dto);
+    Option toEntity(OptionResponse dto);
 }

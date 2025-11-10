@@ -17,6 +17,8 @@ import vn.clothing.fashion_shop.repository.OptionRepository;
 import vn.clothing.fashion_shop.repository.OptionValueRepository;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.optionValue.GetOptionValueDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionValueResponse;
 
 @Service
 public class OptionValueService {
@@ -50,7 +52,8 @@ public class OptionValueService {
         .option(option)
         .build();
         createOptionValue = this.optionValueRepository.saveAndFlush(createOptionValue);
-        return optionValueMapper.toDto(createOptionValue);
+        // return optionValueMapper.toDto(createOptionValue);
+        return null;
     }
 
     public GetOptionValueDTO updateOptionValue(OptionValue optionValue){
@@ -70,7 +73,8 @@ public class OptionValueService {
         updateOptionValue.setSlug(slug);
         updateOptionValue.setOption(option);
         updateOptionValue = this.optionValueRepository.saveAndFlush(updateOptionValue);
-        return optionValueMapper.toDto(updateOptionValue);
+        // return optionValueMapper.toDto(updateOptionValue);
+        return null;
     }
 
     public Option getRawOptionById(Long id){
@@ -102,12 +106,13 @@ public class OptionValueService {
         if(optionValue == null){
             throw new RuntimeException("Gía trị với id: " + id + " không tồn tại");
         }
-        return optionValueMapper.toDto(optionValue);
+        // return optionValueMapper.toDto(optionValue);
+        return null;
     }
 
     public PaginationDTO getAllOptionValue(Pageable pageable, Specification specification){
         Page<OptionValue> optionValues = this.optionValueRepository.findAll(specification, pageable);
-        List<GetOptionValueDTO> listOpValue = optionValueMapper.toDto(optionValues.getContent());
+        List<OptionValueResponse> listOpValue = optionValueMapper.toDto(optionValues.getContent());
         return ConvertPagination.handleConvert(pageable, optionValues, listOpValue);
     }
 }

@@ -5,13 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -149,6 +152,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     // optional: chỉ quét package app của bạn
 
     @Override
+    @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
         Map<RequestMappingInfo, HandlerMethod> map = handlerMapping.getHandlerMethods();
 
@@ -184,20 +188,21 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             }
         });
         List<Permission> permissionsDB = this.permissionRepository.findAll();
-        Set<String> existingEndpoints = permissionsDB.stream()
+        final Set<String> existingEndpoints = permissionsDB.stream()
             .map(p -> p.getApiPath() + "::" + p.getMethod())
             .collect(Collectors.toSet());
 
-        List<Permission> newPermissions = listPermission.stream()
+        final List<Permission> newPermissions = listPermission.stream()
             .filter(p -> !existingEndpoints.contains(p.getApiPath() + "::" + p.getMethod()))
             .toList();
         if(!newPermissions.isEmpty()){
-            this.permissionRepository.saveAll(newPermissions);
+            List<Permission> newPermissionsDB = this.permissionRepository.saveAll(newPermissions);
+            permissionsDB = Stream.concat(permissionsDB.stream(), newPermissionsDB.stream()).distinct().collect(Collectors.toList());
         }
         
-        Role roleByName = this.roleRepository.findByName("admin");
+        final Role roleByName = this.roleRepository.findByName("admin");
         if(roleByName == null){
-            List<Permission> listPermissions = this.permissionRepository.findAll();
+            final List<Permission> listPermissions = this.permissionRepository.findAll();
             Role role = new Role();
             role.setName("admin");
             role.setSlug(SlugUtil.toSlug(role.getName()));
@@ -205,8 +210,14 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             role.setPermissions(listPermissions);
             this.roleRepository.save(role);
         }
-
-        Optional<User> userOptional = this.userRepository.findByEmail("admin@gmail.com");
+        else{
+            if(roleByName.getPermissions().size() != existingEndpoints.size()){
+                roleByName.setPermissions(permissionsDB);
+                this.roleRepository.save(roleByName);
+            }
+        }
+        
+        final Optional<User> userOptional = this.userRepository.findByEmail("admin@gmail.com");
         if(!userOptional.isPresent() || userOptional == null){
             User user = new User();
             user.setEmail("admin@gmail.com");

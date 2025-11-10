@@ -8,8 +8,8 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import vn.clothing.fashion_shop.domain.OptionValue;
-import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO.InnerOptionValueDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.optionValue.GetOptionValueDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionValueResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionValueResponse.InnerOptionValueResponse;
 
 //componentModel = "spring" giúp Spring tự inject mapper qua @Autowired.
 /*
@@ -41,24 +41,24 @@ import vn.clothing.fashion_shop.web.rest.DTO.optionValue.GetOptionValueDTO;
  *      - @Mapper(componentModel = "spring", uses = { CategoryMapper.class })
  */
 @Mapper(componentModel = "spring")
-public interface OptionValueMapper extends EntityMapper<GetOptionValueDTO, OptionValue> {
+public interface OptionValueMapper extends EntityMapper<OptionValueResponse, OptionValue> {
     OptionValueMapper INSTANCE = Mappers.getMapper(OptionValueMapper.class);
 
     @Named("toDto")
-    GetOptionValueDTO toDto(OptionValue entity);
+    OptionValueResponse toDto(OptionValue entity);
 
     @IterableMapping(qualifiedByName = "toDto")
-    List<GetOptionValueDTO> toDto(List<OptionValue> optionValues);
+    List<OptionValueResponse> toDto(List<OptionValue> optionValues);
 
     @Named("toMiniDto")
-    InnerOptionValueDTO toMiniDto(OptionValue optionValue);
+    InnerOptionValueResponse toMiniDto(OptionValue optionValue);
 
     @Named("toMiniDto")
     @IterableMapping(qualifiedByName = "toMiniDto")
-    List<InnerOptionValueDTO> toMiniDto(List<OptionValue> optionValues);
+    List<InnerOptionValueResponse> toMiniDto(List<OptionValue> optionValues);
 
 
 
     // Map từ DTO sang Entity
-    OptionValue toEntity(GetOptionValueDTO dto);
+    OptionValue toEntity(OptionValueResponse dto);
 }

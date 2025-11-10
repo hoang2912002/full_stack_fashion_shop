@@ -1,4 +1,4 @@
-package vn.clothing.fashion_shop.web.rest.DTO.product;
+package vn.clothing.fashion_shop.web.rest.DTO.requests;
 
 import java.util.List;
 
@@ -6,20 +6,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import vn.clothing.fashion_shop.domain.Category;
 import vn.clothing.fashion_shop.domain.Manufacture;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.CategoryRequest.InnerCategoryRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.ManufactureRequest.InnerManufactureRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.VariantRequest.InnerVariantRequest;
 import vn.clothing.fashion_shop.web.validation.product.ProductMatching;
-
-@Getter
-@Setter
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @ProductMatching
-public class ValidationProductDTO {
+public class ProductRequest {
     private Long id;
     private String name;
     private Double price;
@@ -27,23 +27,18 @@ public class ValidationProductDTO {
     private int quantity;
     
     private String description;
-    private Manufacture manufacture;
-    private Category category;
+    private InnerManufactureRequest manufacture;
+    private InnerCategoryRequest category;
     @JsonProperty("isCreate")
     private boolean isCreate;
 
-    private List<InnerVariant> variants;
+    private List<InnerVariantRequest> variants;
 
-    @Getter
-    @Setter
+    @Data
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class InnerVariant {
-        private String skuId;
-        private List<String> optionValues;
-        private Double price;
-        private int stock;
-        private String thumbnail;
+    public static class InnerProductRequest {
+        private Long id;
     }
 }

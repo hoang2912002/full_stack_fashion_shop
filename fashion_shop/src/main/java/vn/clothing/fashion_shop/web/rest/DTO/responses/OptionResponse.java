@@ -1,19 +1,19 @@
-package vn.clothing.fashion_shop.web.rest.DTO.option;
+package vn.clothing.fashion_shop.web.rest.DTO.responses;
 
 import java.time.Instant;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionValueResponse.InnerOptionValueResponse;
 
-@Setter
-@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GetOptionDTO {
+@Data
+public class OptionResponse {
     private Long id;
     private String name;
     private String slug;
@@ -22,24 +22,15 @@ public class GetOptionDTO {
     private boolean activated;
     private Instant updatedAt;
     private String updatedBy;
+    private List<InnerOptionValueResponse> optionValues;
 
-    @Setter
-    @Getter
     @NoArgsConstructor
-    public static class InnerOptionValueDTO {
-        private Long id;
-        private String value;
-        private String slug;
-        
-    }
-
-    @Setter
-    @Getter
-    @NoArgsConstructor
-    public static class InnerOptionDTO {
+    @AllArgsConstructor
+    @Builder
+    @Data
+    public static class InnerOptionResponse {
         private Long id;
         private String name;
         private String slug;
-        
     }
 }

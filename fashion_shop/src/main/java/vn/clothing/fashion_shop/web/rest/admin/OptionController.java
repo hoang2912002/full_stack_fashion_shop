@@ -6,12 +6,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.turkraft.springfilter.boot.Filter;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Option;
+import vn.clothing.fashion_shop.mapper.OptionMapper;
 import vn.clothing.fashion_shop.service.OptionService;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.option.GetOptionDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.option.ValidationOptionDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.OptionRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionResponse;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +24,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -30,37 +31,31 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/v1/admin/options")
+@RequiredArgsConstructor
 public class OptionController {
     
     private final OptionService optionService;
+    private final OptionMapper optionMapper;
     
-    public OptionController(OptionService optionService) {
-        this.optionService = optionService;
-    }
-
     @PostMapping("")
     @ApiMessageResponse("Thêm option thành công")
-    public ResponseEntity<GetOptionDTO> createOption(
-        @RequestBody @Valid ValidationOptionDTO option
+    public ResponseEntity<OptionResponse> createOption(
+        @RequestBody @Valid OptionRequest option
     ) {
-        Option createOption = new Option();
-        BeanUtils.copyProperties(option, createOption);
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.optionService.createOption(createOption));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.optionService.createOption(optionMapper.toValidator(option)));
     }
 
     @PutMapping("")
     @ApiMessageResponse("Cập nhật option thành công")
-    public ResponseEntity<GetOptionDTO> updateOption(
-        @RequestBody @Valid ValidationOptionDTO option
+    public ResponseEntity<OptionResponse> updateOption(
+        @RequestBody @Valid OptionRequest option
     ) {        
-        Option updateOption = new Option();
-        BeanUtils.copyProperties(option, updateOption);
-        return ResponseEntity.ok(this.optionService.updateOption(updateOption));
+        return ResponseEntity.ok(this.optionService.updateOption(optionMapper.toValidator(option)));
     }
     
     @GetMapping("/{id}")
     @ApiMessageResponse("Lấy option theo id thành công")
-    public ResponseEntity<GetOptionDTO> getOptionById(
+    public ResponseEntity<OptionResponse> getOptionById(
         @PathVariable("id") Long id
     ) {
         return ResponseEntity.ok(this.optionService.getOptionById(id));

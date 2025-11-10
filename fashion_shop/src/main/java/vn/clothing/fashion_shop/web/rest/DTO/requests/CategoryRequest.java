@@ -1,0 +1,39 @@
+package vn.clothing.fashion_shop.web.rest.DTO.requests;
+
+import java.time.Instant;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import vn.clothing.fashion_shop.domain.Category;
+import vn.clothing.fashion_shop.web.validation.category.CategoryMatching;
+
+@CategoryMatching
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CategoryRequest {
+    private Long id;
+    private String name;
+    private String slug;
+    private InnerCategoryRequest parent;
+    private String createdBy;
+    private Instant createdAt;
+    private String updatedBy;
+    private Instant updatedAt;
+    private boolean activated;
+    @JsonProperty("isCreate")
+    private boolean isCreate;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class InnerCategoryRequest {
+        private Long id;
+    }
+}

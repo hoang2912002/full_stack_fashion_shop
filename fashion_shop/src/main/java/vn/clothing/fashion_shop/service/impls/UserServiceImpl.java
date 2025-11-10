@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse createUser(User user) {
         try {
             if (handleGetUserByEmail(user.getEmail()) != null) {
-                throw new ServiceException(EnumError.PRODUCT_DATA_EXISTED_EMAIL,"user.exist.email",Map.of("email", user.getEmail()));
+                throw new ServiceException(EnumError.USER_DATA_EXISTED_EMAIL,"user.exist.email",Map.of("email", user.getEmail()));
             }
             final Role role = Optional.ofNullable(user.getRole())
             .map(r -> this.roleService.handleGetRoleById(r.getId()))
@@ -89,7 +89,7 @@ public class UserServiceImpl implements UserService {
     public User updateRefreshTokenUserByEmail(String refresh_token, String email) {
         final User user = handleGetUserByEmail(email);
         if (user == null) {
-            throw new ServiceException(EnumError.PRODUCT_DATA_EXISTED_EMAIL, "user.exist.email",Map.of("email", email));
+            throw new ServiceException(EnumError.USER_DATA_EXISTED_EMAIL, "user.exist.email",Map.of("email", email));
         }
         user.setRefreshToken(refresh_token);
         return this.userRepository.save(user);
@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findRawUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ServiceException(EnumError.PRODUCT_ERR_NOT_FOUND_ID, "user.not.found.id",Map.of("id", id)));
+                .orElseThrow(() -> new ServiceException(EnumError.USER_ERR_NOT_FOUND_ID, "user.not.found.id",Map.of("id", id)));
     }
 
     @Override

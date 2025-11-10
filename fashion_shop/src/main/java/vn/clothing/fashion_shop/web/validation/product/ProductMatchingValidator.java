@@ -4,11 +4,11 @@ import org.springframework.stereotype.Component;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import vn.clothing.fashion_shop.web.rest.DTO.product.ValidationProductDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.ProductRequest;
 @Component
-public class ProductMatchingValidator implements ConstraintValidator<ProductMatching, ValidationProductDTO>  {
+public class ProductMatchingValidator implements ConstraintValidator<ProductMatching, ProductRequest>  {
     @Override
-    public boolean isValid(ValidationProductDTO value, ConstraintValidatorContext context) {
+    public boolean isValid(ProductRequest value, ConstraintValidatorContext context) {
         boolean valid = true;
         if(value.getName() == null || value.getName().trim().isEmpty()){
             addViolation(context,"product.name.notnull", "name");

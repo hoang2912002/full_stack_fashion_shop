@@ -34,6 +34,10 @@ public enum EnumError {
     //----------------Option-------------------
     OPTION_DATA_EXISTED_NAME("OPTION-DTE-NAME","Option already exists with the given Name:",HttpStatus.CONFLICT),
     OPTION_ERR_NOT_FOUND_ID("OPTION-CATE_NF","Not found option with id:",HttpStatus.BAD_REQUEST),
+    
+    //----------------Option value-------------------
+    OPTION_VALUE_DATA_EXISTED_VALUE("OPTION-VALUE-DTE-VALUE","Option value already exists with the given Value:",HttpStatus.CONFLICT),
+    OPTION_VALUE_ERR_NOT_FOUND_ID("OPTION-VALUE-CATE_NF","Not found option value with id:",HttpStatus.BAD_REQUEST),
 
     //----------------Server-------------------
     INTERNAL_ERROR("ACC-S-999", "Unexpected internal server error", HttpStatus.INTERNAL_SERVER_ERROR)

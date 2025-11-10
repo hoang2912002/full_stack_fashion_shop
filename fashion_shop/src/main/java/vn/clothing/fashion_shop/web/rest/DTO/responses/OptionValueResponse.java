@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionResponse.InnerOptionResponse;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,6 +21,7 @@ public class OptionValueResponse {
     private boolean activated;
     private Instant updatedAt;
     private boolean updatedBy;
+    private InnerOptionResponse option;
 
     @NoArgsConstructor
     @AllArgsConstructor

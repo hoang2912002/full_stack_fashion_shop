@@ -4,11 +4,11 @@ import org.springframework.stereotype.Component;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import vn.clothing.fashion_shop.web.rest.DTO.optionValue.ValidationOptionValueDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.OptionValueRequest;
 @Component
-public class OptionValueMatchingValidator implements ConstraintValidator<OptionValueMatching, ValidationOptionValueDTO> {
+public class OptionValueMatchingValidator implements ConstraintValidator<OptionValueMatching, OptionValueRequest> {
     @Override
-    public boolean isValid(ValidationOptionValueDTO value, ConstraintValidatorContext context) {
+    public boolean isValid(OptionValueRequest value, ConstraintValidatorContext context) {
         boolean valid = true;
         if(value.getValue() == null || value.getValue().trim().isEmpty()){
             addViolation(context, 

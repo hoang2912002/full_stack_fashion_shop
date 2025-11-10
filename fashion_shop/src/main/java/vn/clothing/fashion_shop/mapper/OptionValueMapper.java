@@ -4,10 +4,12 @@ import java.util.List;
 
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import vn.clothing.fashion_shop.domain.OptionValue;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.OptionValueRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionValueResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionValueResponse.InnerOptionValueResponse;
 
@@ -45,6 +47,7 @@ public interface OptionValueMapper extends EntityMapper<OptionValueResponse, Opt
     OptionValueMapper INSTANCE = Mappers.getMapper(OptionValueMapper.class);
 
     @Named("toDto")
+    @Mapping(target = "option", ignore = true)
     OptionValueResponse toDto(OptionValue entity);
 
     @IterableMapping(qualifiedByName = "toDto")
@@ -57,8 +60,10 @@ public interface OptionValueMapper extends EntityMapper<OptionValueResponse, Opt
     @IterableMapping(qualifiedByName = "toMiniDto")
     List<InnerOptionValueResponse> toMiniDto(List<OptionValue> optionValues);
 
-
+    @Named("toDetailDto")
+    OptionValueResponse toDetailDto(OptionValue entity);
 
     // Map từ DTO sang Entity
     OptionValue toEntity(OptionValueResponse dto);
+    OptionValue toValidator(OptionValueRequest dto);
 }

@@ -4,13 +4,13 @@ import org.springframework.stereotype.Component;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import vn.clothing.fashion_shop.web.rest.DTO.category.ValidationCategoryDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.CategoryRequest;
 
 @Component
-public class CategoryMatchingValidator implements ConstraintValidator<CategoryMatching, ValidationCategoryDTO>{
+public class CategoryMatchingValidator implements ConstraintValidator<CategoryMatching, CategoryRequest>{
 
     @Override
-    public boolean isValid(ValidationCategoryDTO value, ConstraintValidatorContext context) {
+    public boolean isValid(CategoryRequest value, ConstraintValidatorContext context) {
         boolean valid = true;
 
         if (value.getName() == null || value.getName().trim().isEmpty()) {

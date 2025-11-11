@@ -16,6 +16,11 @@ public enum EnumError {
     //----------------Product-------------------
     PRODUCT_DATA_EXISTED_NAME("PRODUCT-DTE-NAME","Product already exists with the given Name:",HttpStatus.CONFLICT),
     PRODUCT_ERR_NOT_FOUND_ID("PRODUCT-CATE_NF","Not found product with id:",HttpStatus.BAD_REQUEST),
+   
+    //----------------Product-------------------
+    CATEGORY_DATA_EXISTED_ID("CATEGORY-DTE-ID","Category already exists with the given Id:",HttpStatus.CONFLICT),
+    CATEGORY_DATA_EXISTED_SLUG("CATEGORY-DTE-SLUG","Category already exists with the given Slug:",HttpStatus.CONFLICT),
+    CATEGORY_ERR_NOT_FOUND_ID("CATEGORY-CATE_NF","Not found category with id:",HttpStatus.BAD_REQUEST),
 
     // PRODUCT_DATA_EXISTED_NAME("PRODUCT-DTE-NAME","Product already exists with the given Name:",HttpStatus.CONFLICT),
 

@@ -6,13 +6,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.turkraft.springfilter.boot.Filter;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Category;
+import vn.clothing.fashion_shop.mapper.CategoryMapper;
 import vn.clothing.fashion_shop.service.CategoryService;
 import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.category.CreateCategoryDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.category.UpdateCategoryDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.category.ValidationCategoryDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.CategoryRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.CategoryResponse;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
@@ -27,32 +28,25 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
-
-
 @RestController
 @RequestMapping("/api/v1/admin/categories")
+@RequiredArgsConstructor
 public class CategoryController {
     private final CategoryService categoryService;
+    private final CategoryMapper categoryMapper;
     
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
-
     @PostMapping("")
     @ApiMessageResponse("Thêm mới danh mục thành công")
-    public ResponseEntity<CreateCategoryDTO> createCategory(
-        @RequestBody @Valid ValidationCategoryDTO category
+    public ResponseEntity<CategoryResponse> createCategory(
+        @RequestBody @Valid CategoryRequest category
     ) {
-        Category createCategory = new Category();
-        BeanUtils.copyProperties(category, createCategory);
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.categoryService.createCategory(createCategory));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.categoryService.createCategory(categoryMapper.toValidator(category)));
     }
 
     @PutMapping("")
     @ApiMessageResponse("Cập nhật danh mục thành công")
-    public ResponseEntity<UpdateCategoryDTO> updateCategory(
-        @RequestBody @Valid ValidationCategoryDTO category
+    public ResponseEntity<CategoryResponse> updateCategory(
+        @RequestBody @Valid CategoryRequest category
     ) {        
         Category updateCategory = new Category();
         BeanUtils.copyProperties(category, updateCategory);
@@ -61,7 +55,7 @@ public class CategoryController {
     
     @GetMapping("/{id}")
     @ApiMessageResponse("Lấy danh mục theo id thành công")
-    public ResponseEntity<Category> getCategoryById(
+    public ResponseEntity<CategoryResponse> getCategoryById(
         @PathVariable("id") Long id
     ) {
         return ResponseEntity.ok(this.categoryService.getCategoryById(id));

@@ -22,8 +22,6 @@ public class CategoryResponse {
     private String updatedBy;
     private Instant updatedAt;
     private boolean activated;
-    @JsonProperty("isCreate")
-    private boolean isCreate;
 
     @Data
     @Builder

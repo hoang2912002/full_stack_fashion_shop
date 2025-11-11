@@ -1,4 +1,4 @@
-package vn.clothing.fashion_shop.web.validation.Login;
+package vn.clothing.fashion_shop.web.validation.login;
 
 
 import java.util.regex.Matcher;
@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import vn.clothing.fashion_shop.web.rest.DTO.authenticate.LoginDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.LoginRequest;
 @Component
-public class LoginMatchingValidator  implements ConstraintValidator<LoginMatching, LoginDTO> {
+public class LoginMatchingValidator  implements ConstraintValidator<LoginMatching, LoginRequest> {
     @Override
-    public boolean isValid(LoginDTO value, ConstraintValidatorContext context) {
+    public boolean isValid(LoginRequest value, ConstraintValidatorContext context) {
         boolean valid = true;
         Pattern p = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
         Matcher matcher = p.matcher(value.getUsername());

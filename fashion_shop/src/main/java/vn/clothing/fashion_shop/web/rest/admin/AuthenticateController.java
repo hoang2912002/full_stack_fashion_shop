@@ -1,7 +1,10 @@
 package vn.clothing.fashion_shop.web.rest.admin;
 
-import org.springframework.beans.BeanUtils;
+import java.util.Locale;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -18,20 +21,33 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
+import vn.clothing.fashion_shop.constants.util.MessageUtil;
 import vn.clothing.fashion_shop.domain.User;
+import vn.clothing.fashion_shop.mapper.RoleMapper;
 import vn.clothing.fashion_shop.security.SecurityUtils;
+import vn.clothing.fashion_shop.service.AuthenticateService;
 import vn.clothing.fashion_shop.service.UserService;
-import vn.clothing.fashion_shop.web.rest.DTO.authenticate.LoginDTO;
-import vn.clothing.fashion_shop.web.rest.DTO.authenticate.ResponseLoginDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.LoginRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.LoginResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.LoginResponse.ResponseUserData;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.LoginResponse.UserGetAccount;
+import vn.clothing.fashion_shop.web.rest.errors.EnumError;
+import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
 
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class AuthenticateController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final SecurityUtils securityUtils;
+    private final AuthenticateService authenticateService;
     private final UserService userService;
+    private final RoleMapper roleMapper;
+    private final MessageUtil messageUtil;
+    Locale locale = LocaleContextHolder.getLocale();
 
     @Value("${fashionshop.cookie.path}")
     private String cookiePath;
@@ -45,20 +61,11 @@ public class AuthenticateController {
     @Value("${fashionshop.jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenExpiration;
 
-    public AuthenticateController(
-        AuthenticationManagerBuilder authenticationManagerBuilder,
-        SecurityUtils securityUtils,
-        UserService userService
-    ) {
-        this.authenticationManagerBuilder = authenticationManagerBuilder;
-        this.securityUtils = securityUtils;
-        this.userService = userService;
-    }
 
     @PostMapping("/login")
-    @ApiMessageResponse("Đăng nhập thành công")
-    public ResponseEntity<ResponseLoginDTO> login (
-        @RequestBody @Valid LoginDTO loginDTO
+    @ApiMessageResponse("auth.success.login")
+    public ResponseEntity<LoginResponse> login (
+        @RequestBody @Valid LoginRequest loginDTO
     ) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
             loginDTO.getUsername(),
@@ -67,16 +74,22 @@ public class AuthenticateController {
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         User currentUserLogin = this.userService.handleGetUserByEmail(loginDTO.getUsername());
-        ResponseLoginDTO<Object> responseLoginDTO = new ResponseLoginDTO<>();
-        ResponseLoginDTO.ResponseUserData userDTO = new ResponseLoginDTO.ResponseUserData();
+        LoginResponse responseLoginDTO = new LoginResponse();
+        ResponseUserData userDTO = null;
         String refresh_token = "";
         if(currentUserLogin != null){
-            BeanUtils.copyProperties(currentUserLogin, userDTO);
-            refresh_token = this.securityUtils.createRefreshToken(authentication.getName(),userDTO);
+            userDTO = ResponseUserData.builder()
+            .id(currentUserLogin.getId())
+            .fullName(currentUserLogin.getFullName())
+            .email(currentUserLogin.getEmail())
+            .avatar(currentUserLogin.getAvatar())
+            .role(roleMapper.toDto(currentUserLogin.getRole()))
+            .build();
+            refresh_token = this.authenticateService.createRefreshToken(authentication.getName(),userDTO);
             this.userService.updateRefreshTokenUserByEmail(refresh_token, authentication.getName());
         }
         responseLoginDTO.setUser(userDTO);
-        String access_token = this.securityUtils.createAccessToken(authentication.getName(),responseLoginDTO);
+        String access_token = this.authenticateService.createAccessToken(authentication.getName(),responseLoginDTO.getUser());
         responseLoginDTO.setAccessToken(access_token);
 
         //Create cookie for refresh_token
@@ -92,47 +105,56 @@ public class AuthenticateController {
     }
     
     @GetMapping("/account")
-    @ApiMessageResponse("Lấy thông tin tài khoản thành công")
-    public ResponseEntity<ResponseLoginDTO.ResponseUserData> getAccount() {
+    @ApiMessageResponse("auth.success.account")
+    public ResponseEntity<ResponseUserData> getAccount() {
         String email = SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : "";
         User user = this.userService.handleGetUserByEmail(email);
         if(user == null || user instanceof User == false){
-            throw new RuntimeException("Người dùng với email: " + user.getEmail() + " đã tồn tại");
+            throw new ServiceException(EnumError.USER_ERR_NOT_FOUND_EMAIL, "user.not.found.email",Map.of("email", email));
         }
 
-        if(!user.isActivated()){
-            throw new RuntimeException("Tài khoản " + email + " chưa được kích hoạt");
-        }
-        ResponseLoginDTO<Object> response = new ResponseLoginDTO<>();
-        ResponseLoginDTO.UserGetAccount userDTO = response.new UserGetAccount();
-        ResponseLoginDTO.ResponseUserData responseUserData = new ResponseLoginDTO.ResponseUserData();
-        BeanUtils.copyProperties(user, responseUserData);
+        // if(!user.isActivated()){
+        //     throw new ServiceException(EnumError.USER_ERR_NOT_FOUND_EMAIL, "user.not.found.email",Map.of("email", email));
+        //     throw new RuntimeException("Tài khoản " + email + " chưa được kích hoạt");
+        // }
+        LoginResponse response = new LoginResponse();
+        UserGetAccount userDTO = response.new UserGetAccount();
+        ResponseUserData responseUserData = ResponseUserData.builder()
+            .id(user.getId())
+            .fullName(user.getFullName())
+            .email(user.getEmail())
+            .avatar(user.getAvatar())
+            .role(roleMapper.toDto(user.getRole()))
+        .build();
         userDTO.setUser(responseUserData);
         return ResponseEntity.ok(responseUserData);
     }
     
     @PostMapping("/refresh_token")
-    @ApiMessageResponse("Refresh token thành công")
-    public ResponseEntity<ResponseLoginDTO> refreshToken(
+    @ApiMessageResponse("auth.success.refresh.token")
+    public ResponseEntity<LoginResponse> refreshToken(
         @CookieValue(name = "refresh_token", defaultValue = "") String refresh_token
     ) {
         Jwt token = this.securityUtils.getUserFromJWTToken(refresh_token);
-        // if(token.getExpiresAt().isBefore(Instant.now())){
-        //     throw new RuntimeException("Hết hạn đăng nhập, vui lòng đăng nhập lại");
-        // }
         String email = token.getSubject();
         User currentUser = this.userService.handleGetUserByEmail(email);
         if(currentUser == null){
-            throw new RuntimeException("Refresh token không hợp lệ");
+            throw new ServiceException(EnumError.USER_INVALID_REFRESH_TOKEN, "user.refresh.token.notformat",Map.of("refresh_token", "wrong"));
+
         }
-        ResponseLoginDTO<Object> responseLoginDTO = new ResponseLoginDTO<>();
-        ResponseLoginDTO.ResponseUserData userDTO = new ResponseLoginDTO.ResponseUserData();
-        BeanUtils.copyProperties(currentUser, userDTO);
+        LoginResponse responseLoginDTO = new LoginResponse();
+        ResponseUserData userDTO = ResponseUserData.builder()
+            .id(currentUser.getId())
+            .fullName(currentUser.getFullName())
+            .email(currentUser.getEmail())
+            .avatar(currentUser.getAvatar())
+            .role(roleMapper.toDto(currentUser.getRole()))
+        .build();
         responseLoginDTO.setUser(userDTO);
-        String accessToken = this.securityUtils.createAccessToken(email,responseLoginDTO);
+        String accessToken = this.authenticateService.createAccessToken(email,userDTO);
         responseLoginDTO.setAccessToken(accessToken);
 
-        String new_refresh_token = this.securityUtils.createRefreshToken(email,userDTO);
+        String new_refresh_token = this.authenticateService.createRefreshToken(email,userDTO);
 
         this.userService.updateRefreshTokenUserByEmail(new_refresh_token, email);
         

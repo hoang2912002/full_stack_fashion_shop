@@ -1,21 +1,24 @@
-package vn.clothing.fashion_shop.web.rest.DTO.authenticate;
+package vn.clothing.fashion_shop.web.rest.DTO.responses;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.clothing.fashion_shop.domain.Role;
 
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResponseLoginDTO<T> {
+@Data
+@Builder
+public class LoginResponse {
     private String accessToken;
     private ResponseUserData user;
 
-    @Getter
-    @Setter
+
+    @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ResponseUserData {
@@ -23,19 +26,18 @@ public class ResponseLoginDTO<T> {
         private String fullName;
         private String email;
         private String avatar;
-        private Role role;
+        private RoleResponse role;
     }
 
-    @Getter
-    @Setter
+    @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public class UserGetAccount{
         private ResponseUserData user;
     }
 
-    @Getter
-    @Setter
+    @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UserInsideToken {

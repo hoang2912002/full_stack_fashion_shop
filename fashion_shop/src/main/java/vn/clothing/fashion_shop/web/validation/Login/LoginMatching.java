@@ -1,4 +1,4 @@
-package vn.clothing.fashion_shop.web.validation.Login;
+package vn.clothing.fashion_shop.web.validation.login;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

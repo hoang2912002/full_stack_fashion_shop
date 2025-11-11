@@ -7,18 +7,19 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import vn.clothing.fashion_shop.domain.ProductSku;
-import vn.clothing.fashion_shop.web.rest.DTO.productSku.GetProductSkuDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductSkuResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductSkuResponse.InnerProductSkuResponse;
 
 @Mapper(componentModel = "spring")
-public interface ProductSkuMapper extends EntityMapper<GetProductSkuDTO, ProductSku> {
+public interface ProductSkuMapper extends EntityMapper<ProductSkuResponse, ProductSku> {
     ProductSkuMapper INSTANCE = Mappers.getMapper(ProductSkuMapper.class);
 
     @Named("toDto")
-    GetProductSkuDTO toDto(ProductSku productSku);
-    List<GetProductSkuDTO> toDto(List<ProductSku> productSkus);
+    ProductSkuResponse toDto(ProductSku productSku);
+    List<ProductSkuResponse> toDto(List<ProductSku> productSkus);
 
     @Named("toMiniDto")
-    GetProductSkuDTO toMiniDto(ProductSku productSku);
+    InnerProductSkuResponse toMiniDto(ProductSku productSku);
     // Map từ DTO sang Entity
-    ProductSku toEntity(GetProductSkuDTO dto);
+    ProductSku toEntity(ProductSkuResponse dto);
 }

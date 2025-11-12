@@ -35,8 +35,8 @@ import vn.clothing.fashion_shop.service.OptionValueService;
 import vn.clothing.fashion_shop.service.ProductService;
 import vn.clothing.fashion_shop.service.ProductSkuService;
 import vn.clothing.fashion_shop.service.VariantService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.VariantRequest.InnerVariantRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductResponse;
 import vn.clothing.fashion_shop.web.rest.errors.EnumError;
 import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
@@ -174,7 +174,7 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     @Transactional(readOnly = true)
-    public PaginationDTO getAllProduct(Pageable pageable, Specification spec){
+    public PaginationResponse getAllProduct(Pageable pageable, Specification spec){
         try {
             Page<Product> products = this.productRepository.findAll(spec, pageable);
             List<ProductResponse> listProducts = productMapper.toDto(products.getContent());

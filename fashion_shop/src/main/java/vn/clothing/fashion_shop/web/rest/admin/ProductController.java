@@ -20,8 +20,8 @@ import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Product;
 import vn.clothing.fashion_shop.mapper.ProductMapper;
 import vn.clothing.fashion_shop.service.ProductService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.ProductRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductResponse;
 
 @RestController
@@ -37,7 +37,7 @@ public class ProductController {
     }
 
     @PostMapping("")
-    @ApiMessageResponse("Thêm sản phẩm thành công")
+    @ApiMessageResponse("product.success.create")
     public ResponseEntity<ProductResponse> createProduct(
         @RequestBody @Valid ProductRequest product
     ) {
@@ -45,7 +45,7 @@ public class ProductController {
     }
     
     @PutMapping("")
-    @ApiMessageResponse("Cập nhật sản phẩm thành công")
+    @ApiMessageResponse("product.success.update")
     public ResponseEntity<ProductResponse> updateProduct(
         @RequestBody @Valid ProductRequest product
     ) {
@@ -53,7 +53,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    @ApiMessageResponse("Lấy sản phẩm theo id thành công")
+    @ApiMessageResponse("product.success.get.single")
     public ResponseEntity<ProductResponse> getProductById(
         @PathVariable("id") Long id
     ) {
@@ -61,8 +61,8 @@ public class ProductController {
     }
 
     @GetMapping("")
-    @ApiMessageResponse("Lấy danh sách thành công")
-    public ResponseEntity<PaginationDTO> getAllProduct(
+    @ApiMessageResponse("product.success.get.all")
+    public ResponseEntity<PaginationResponse> getAllProduct(
         Pageable pageable,
         @Filter Specification<Product> spec
     ){
@@ -70,7 +70,7 @@ public class ProductController {
     }
     
     @DeleteMapping("/{id}")
-    @ApiMessageResponse("Xóa thành công")
+    @ApiMessageResponse("product.success.delete")
     public ResponseEntity<Void> deleteProductById(
         @PathVariable("id") Long id
     ){

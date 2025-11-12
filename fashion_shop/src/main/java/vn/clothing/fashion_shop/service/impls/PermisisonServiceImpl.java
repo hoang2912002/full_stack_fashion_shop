@@ -19,7 +19,7 @@ import vn.clothing.fashion_shop.domain.Permission;
 import vn.clothing.fashion_shop.mapper.PermissionMapper;
 import vn.clothing.fashion_shop.repository.PermissionRepository;
 import vn.clothing.fashion_shop.service.PermissionService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PermissionResponse;
 import vn.clothing.fashion_shop.web.rest.errors.EnumError;
 import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
@@ -126,7 +126,7 @@ public class PermisisonServiceImpl implements PermissionService{
 
     @Override
     @Transactional(readOnly = true)
-    public PaginationDTO getAllPermission(Pageable pageable, Specification specification){
+    public PaginationResponse getAllPermission(Pageable pageable, Specification specification){
         try {
             Page<Permission> permissions = this.permissionRepository.findAll(specification, pageable);
 

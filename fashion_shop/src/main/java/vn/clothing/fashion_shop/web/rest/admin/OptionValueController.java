@@ -10,9 +10,9 @@ import lombok.RequiredArgsConstructor;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.mapper.OptionValueMapper;
 import vn.clothing.fashion_shop.service.OptionValueService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.OptionValueRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionValueResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -33,7 +33,7 @@ public class OptionValueController {
     private final OptionValueMapper optionValueMapper;
 
     @PostMapping("")
-    @ApiMessageResponse("Thêm option value thành công")
+    @ApiMessageResponse("option.value.success.create")
     public ResponseEntity<OptionValueResponse> createOptionValue(
         @RequestBody @Valid OptionValueRequest optionValue
     ) {
@@ -41,7 +41,7 @@ public class OptionValueController {
     }
     
     @PutMapping("")
-    @ApiMessageResponse("Cập nhật option value thành công")
+    @ApiMessageResponse("option.value.success.update")
     public ResponseEntity<OptionValueResponse> updateOptionValue(
         @RequestBody @Valid OptionValueRequest optionValue
     ) {        
@@ -49,7 +49,7 @@ public class OptionValueController {
     }
 
     @GetMapping("/{id}")
-    @ApiMessageResponse("Lấy option value theo id thành công")
+    @ApiMessageResponse("option.value.success.get.single")
     public ResponseEntity<OptionValueResponse> getOptionValueById(
         @PathVariable("id") Long id
     ) {
@@ -57,8 +57,8 @@ public class OptionValueController {
     }
     
     @GetMapping("")
-    @ApiMessageResponse("Lấy danh sách option value thành công")
-    public ResponseEntity<PaginationDTO> getAllOptionValue(
+    @ApiMessageResponse("option.value.success.get.all")
+    public ResponseEntity<PaginationResponse> getAllOptionValue(
         Pageable pageable,
         @Filter Specification specification
     ) {
@@ -66,7 +66,7 @@ public class OptionValueController {
     }
 
     @DeleteMapping("/{id}")
-    @ApiMessageResponse("Xóa option value theo id thành công")
+    @ApiMessageResponse("option.value.success.delete")
     public ResponseEntity<Void> deleteOptionValueById(
         @PathVariable("id") Long id
     ){

@@ -5,8 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import vn.clothing.fashion_shop.domain.OptionValue;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionValueResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 
 public interface OptionValueService {
     public OptionValueResponse createOptionValue(OptionValue optionValue);
@@ -23,5 +23,5 @@ public interface OptionValueService {
 
     public OptionValueResponse getOptionValueById(Long id);
 
-    public PaginationDTO getAllOptionValue(Pageable pageable, Specification specification);
+    public PaginationResponse getAllOptionValue(Pageable pageable, Specification specification);
 }

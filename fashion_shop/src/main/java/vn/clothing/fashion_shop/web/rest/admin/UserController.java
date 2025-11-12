@@ -21,8 +21,8 @@ import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.User;
 import vn.clothing.fashion_shop.mapper.UserMapper;
 import vn.clothing.fashion_shop.service.UserService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.UserRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.UserResponse;
 
 
@@ -36,7 +36,7 @@ public class UserController {
     private final UserMapper userMapper;
 
     @PostMapping("")
-    @ApiMessageResponse("Tạo mới người dùng thành công")
+    @ApiMessageResponse("user.success.create")
     public ResponseEntity<UserResponse> createUser(
         @RequestBody @Valid UserRequest user
     ) throws Exception {
@@ -45,7 +45,7 @@ public class UserController {
     }
     
     @PutMapping("")
-    @ApiMessageResponse("Cập nhật người dùng thành công")
+    @ApiMessageResponse("user.success.update")
     public ResponseEntity<UserResponse> updateUser(
         @RequestBody @Valid UserRequest user
     ) {
@@ -54,7 +54,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @ApiMessageResponse("Lấy user theo id thành công")
+    @ApiMessageResponse("user.success.get.single")
     public ResponseEntity<UserResponse> getUserById(
         @PathVariable("id") Long id
     ) {
@@ -62,8 +62,8 @@ public class UserController {
     }
     
     @GetMapping("")
-    @ApiMessageResponse("Lấy danh sách người dùng thành công")
-    public ResponseEntity<PaginationDTO> getAllUser(
+    @ApiMessageResponse("user.success.get.all")
+    public ResponseEntity<PaginationResponse> getAllUser(
         Pageable pageable,
         @Filter Specification<User> spec
     ){
@@ -71,7 +71,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @ApiMessageResponse("Xóa người dùng thành công")
+    @ApiMessageResponse("user.success.delete")
     public ResponseEntity<Void> deleteUserById(
         @PathVariable("id") Long id
     ){

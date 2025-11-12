@@ -11,9 +11,9 @@ import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Option;
 import vn.clothing.fashion_shop.mapper.OptionMapper;
 import vn.clothing.fashion_shop.service.OptionService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.OptionRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +38,7 @@ public class OptionController {
     private final OptionMapper optionMapper;
     
     @PostMapping("")
-    @ApiMessageResponse("Thêm option thành công")
+    @ApiMessageResponse("option.success.create")
     public ResponseEntity<OptionResponse> createOption(
         @RequestBody @Valid OptionRequest option
     ) {
@@ -46,7 +46,7 @@ public class OptionController {
     }
 
     @PutMapping("")
-    @ApiMessageResponse("Cập nhật option thành công")
+    @ApiMessageResponse("option.success.update")
     public ResponseEntity<OptionResponse> updateOption(
         @RequestBody @Valid OptionRequest option
     ) {        
@@ -54,7 +54,7 @@ public class OptionController {
     }
     
     @GetMapping("/{id}")
-    @ApiMessageResponse("Lấy option theo id thành công")
+    @ApiMessageResponse("option.success.get.single")
     public ResponseEntity<OptionResponse> getOptionById(
         @PathVariable("id") Long id
     ) {
@@ -62,8 +62,8 @@ public class OptionController {
     }
     
     @GetMapping("")
-    @ApiMessageResponse("Lấy danh sách option thành công")
-    public ResponseEntity<PaginationDTO> getAllOption(
+    @ApiMessageResponse("option.success.get.all")
+    public ResponseEntity<PaginationResponse> getAllOption(
         Pageable pageable,
         @Filter Specification specification
     ) {
@@ -71,7 +71,7 @@ public class OptionController {
     }
 
     @DeleteMapping("/{id}")
-    @ApiMessageResponse("Xóa option theo id thành công")
+    @ApiMessageResponse("option.success.delete")
     public ResponseEntity<Void> deleteOptionById(@PathVariable("id") Long id)
     {
         return ResponseEntity.ok(null);

@@ -4,13 +4,12 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 public class ConvertPagination {
-    public static <E, D> PaginationDTO handleConvert(Pageable pageable, Page<E> data, List<D> listData){
-        PaginationDTO rs = new PaginationDTO();
-        PaginationDTO.InnerMetaPaginationDTO meta = new PaginationDTO.InnerMetaPaginationDTO(1,10,1,0L);
+    public static <E, D> PaginationResponse handleConvert(Pageable pageable, Page<E> data, List<D> listData){
+        PaginationResponse rs = new PaginationResponse();
+        PaginationResponse.InnerMetaPaginationResponse meta = new PaginationResponse.InnerMetaPaginationResponse(1,10,1,0L);
         
         if (data == null) {
             rs.setMeta(meta);

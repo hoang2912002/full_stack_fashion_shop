@@ -21,7 +21,7 @@ import vn.clothing.fashion_shop.mapper.RoleMapper;
 import vn.clothing.fashion_shop.repository.RoleRepository;
 import vn.clothing.fashion_shop.service.PermissionService;
 import vn.clothing.fashion_shop.service.RoleService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.RoleResponse;
 import vn.clothing.fashion_shop.web.rest.errors.EnumError;
 import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
@@ -128,7 +128,7 @@ public class RoleServiceImpl implements RoleService{
 
     @Override
     @Transactional(readOnly=true)
-    public PaginationDTO getAllRole(Pageable pageable, Specification spec){
+    public PaginationResponse getAllRole(Pageable pageable, Specification spec){
         try {
             Page<Role> roles = this.roleRepository.findAll(spec, pageable);
             List<RoleResponse> roleDTOs = roles.getContent().stream().map(r -> {

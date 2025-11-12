@@ -7,7 +7,7 @@ import com.turkraft.springfilter.boot.Filter;
 
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Manufacture;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -56,7 +56,7 @@ public class ManufactureController {
 
     @GetMapping("")
     @ApiMessageResponse("Lấy danh sách nhà sản xuất thành công")
-    public ResponseEntity<PaginationDTO> getAllManufactures(
+    public ResponseEntity<PaginationResponse> getAllManufactures(
         Pageable pageable,
         @Filter Specification specification
     ) {

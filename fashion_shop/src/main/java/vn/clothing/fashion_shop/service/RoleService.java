@@ -4,7 +4,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import vn.clothing.fashion_shop.domain.Role;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.RoleResponse;
 
 public interface RoleService {
@@ -17,7 +17,7 @@ public interface RoleService {
 
     RoleResponse getRoleById(Long id);
 
-    PaginationDTO getAllRole(Pageable pageable, Specification spec);
+    PaginationResponse getAllRole(Pageable pageable, Specification spec);
 
     boolean existsBySlug(String slug, Long checkId);
 

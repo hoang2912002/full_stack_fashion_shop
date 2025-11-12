@@ -21,8 +21,8 @@ import vn.clothing.fashion_shop.repository.OptionRepository;
 import vn.clothing.fashion_shop.repository.OptionValueRepository;
 import vn.clothing.fashion_shop.service.OptionService;
 import vn.clothing.fashion_shop.service.OptionValueService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionValueResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.errors.EnumError;
 import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
 
@@ -164,7 +164,7 @@ public class OptionValueServiceImpl implements OptionValueService {
 
     @Override
     @Transactional(readOnly = true)
-    public PaginationDTO getAllOptionValue(Pageable pageable, Specification specification){
+    public PaginationResponse getAllOptionValue(Pageable pageable, Specification specification){
         try {
             Page<OptionValue> optionValues = this.optionValueRepository.findAll(specification, pageable);
             List<OptionValueResponse> listOpValue = optionValueMapper.toDto(optionValues.getContent());

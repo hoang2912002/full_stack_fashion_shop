@@ -16,7 +16,7 @@ import com.turkraft.springfilter.boot.Filter;
 
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Promotion;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 
 
 
@@ -26,7 +26,7 @@ import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 public class PromotionController {
 
     @PostMapping("")
-    @ApiMessageResponse("Create a promotion success")
+    @ApiMessageResponse("promotion.success.create")
     public ResponseEntity<Promotion> createPromotion(
         @RequestBody Promotion promotion
     ) {
@@ -36,13 +36,13 @@ public class PromotionController {
     
 
     @GetMapping("/{id}")
-    @ApiMessageResponse("Get a promotion by id success")
+    @ApiMessageResponse("promotion.success.update")
     public ResponseEntity<Promotion> getPromotionById(@PathVariable("id") Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @PutMapping("")
-    @ApiMessageResponse("Update a promotion by id success")
+    @ApiMessageResponse("promotion.success.get.single")
     public ResponseEntity<Promotion> updatePromotionById(
         @RequestBody Promotion promotion
     ) {
@@ -50,8 +50,8 @@ public class PromotionController {
     }
     
     @GetMapping("")
-    @ApiMessageResponse("Get list promotions by id success")
-    public ResponseEntity<PaginationDTO> getAllPromotion(
+    @ApiMessageResponse("promotion.success.get.all")
+    public ResponseEntity<PaginationResponse> getAllPromotion(
         Pageable pageable,
         @Filter Specification<Promotion> spec
     ) {

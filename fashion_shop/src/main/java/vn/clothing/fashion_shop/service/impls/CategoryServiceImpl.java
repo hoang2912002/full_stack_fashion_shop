@@ -21,9 +21,9 @@ import vn.clothing.fashion_shop.domain.Category;
 import vn.clothing.fashion_shop.mapper.CategoryMapper;
 import vn.clothing.fashion_shop.repository.CategoryRepository;
 import vn.clothing.fashion_shop.service.CategoryService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.CategoryRequest.InnerCategoryRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.CategoryResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.CategoryResponse.InnerCategoryResponse;
 import vn.clothing.fashion_shop.web.rest.errors.EnumError;
 import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
@@ -80,7 +80,7 @@ public class CategoryServiceImpl implements CategoryService {
     
     @Override
     @Transactional(rollbackFor = ServiceException.class, readOnly = true)
-    public PaginationDTO getAllCategory(Specification spec, Pageable pageable){
+    public PaginationResponse getAllCategory(Specification spec, Pageable pageable){
         try {
             final Page<Category> categories = this.categoryRepository.findAll(spec, pageable);
             final List<CategoryResponse> categoriesList = categoryMapper.toDto(categories.getContent());

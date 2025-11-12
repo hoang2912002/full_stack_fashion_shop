@@ -8,7 +8,7 @@ import com.turkraft.springfilter.boot.Filter;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Variant;
 import vn.clothing.fashion_shop.service.VariantService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -35,7 +35,7 @@ public class VariantController {
     }
 
     @PostMapping("")
-    @ApiMessageResponse("Thêm variant thành công")
+    @ApiMessageResponse("variant.success.create")
     public ResponseEntity<Variant> createVariant(
         @RequestBody Variant variant
     ) {
@@ -43,7 +43,7 @@ public class VariantController {
     }
     
     @PutMapping("")
-    @ApiMessageResponse("Cập nhật variant thành công")
+    @ApiMessageResponse("variant.success.update")
     public ResponseEntity<Variant> updateVariant(
         @RequestBody Variant variant
     ) {
@@ -51,7 +51,7 @@ public class VariantController {
     }
 
     @GetMapping("/{id}")
-    @ApiMessageResponse("Lấy variant theo id thành công")
+    @ApiMessageResponse("variant.success.get.single")
     public ResponseEntity<Variant> getVariantById(
         @PathVariable("id") Long id
     ) {
@@ -59,8 +59,8 @@ public class VariantController {
     }
 
     @GetMapping("")
-    @ApiMessageResponse("Lấy danh sách thành công")
-    public ResponseEntity<PaginationDTO> getAllVariant(
+    @ApiMessageResponse("variant.success.get.all")
+    public ResponseEntity<PaginationResponse> getAllVariant(
         Pageable pageable,
         @Filter Specification<Variant> spec
     ){
@@ -68,7 +68,7 @@ public class VariantController {
     }
     
     @DeleteMapping("/{id}")
-    @ApiMessageResponse("Xóa thành công")
+    @ApiMessageResponse("variant.success.delete")
     public ResponseEntity<Void> deleteVariantById(
         @PathVariable("id") Long id
     ){

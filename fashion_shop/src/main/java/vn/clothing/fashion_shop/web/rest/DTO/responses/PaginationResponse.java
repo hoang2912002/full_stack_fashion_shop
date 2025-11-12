@@ -1,4 +1,4 @@
-package vn.clothing.fashion_shop.web.rest.DTO;
+package vn.clothing.fashion_shop.web.rest.DTO.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,15 +9,15 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaginationDTO {
-    private InnerMetaPaginationDTO meta;
+public class PaginationResponse {
+    private InnerMetaPaginationResponse meta;
     private Object data;
 
     @Getter
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class InnerMetaPaginationDTO {
+    public static class InnerMetaPaginationResponse {
         private int page;
         private int pageSize;
         private int pages;

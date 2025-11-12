@@ -22,8 +22,8 @@ import vn.clothing.fashion_shop.repository.UserRepository;
 import vn.clothing.fashion_shop.service.AddressService;
 import vn.clothing.fashion_shop.service.RoleService;
 import vn.clothing.fashion_shop.service.UserService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.AddressResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.UserResponse;
 import vn.clothing.fashion_shop.web.rest.errors.EnumError;
 import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
@@ -144,7 +144,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackOn= ServiceException.class)
-    public PaginationDTO getAllUser(Pageable pageable, Specification<User> spec){
+    public PaginationResponse getAllUser(Pageable pageable, Specification<User> spec){
         try {
             Page<User> users = this.userRepository.findAll(spec, pageable);
             List<UserResponse> userDTOs = users.getContent().stream().map(u -> {

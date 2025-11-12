@@ -9,8 +9,8 @@ import jakarta.validation.Valid;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Permission;
 import vn.clothing.fashion_shop.service.PermissionService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.PermissionRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PermissionResponse;
 
 import org.springframework.beans.BeanUtils;
@@ -18,10 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +38,7 @@ public class PermissionController {
     }
 
     @PostMapping("")
-    @ApiMessageResponse("Thêm mới permission thành công")
+    @ApiMessageResponse("permission.success.create")
     public ResponseEntity<PermissionResponse> createPermission(
         @RequestBody @Valid PermissionRequest permission
     ) {
@@ -50,7 +48,7 @@ public class PermissionController {
     }
     
     @PutMapping("")
-    @ApiMessageResponse("Cập nhật permission thành công")
+    @ApiMessageResponse("permission.success.update")
     public ResponseEntity<PermissionResponse> updatePermission(
         @RequestBody @Valid PermissionRequest permission
     ) {
@@ -60,7 +58,7 @@ public class PermissionController {
     }
 
     @GetMapping("/{id}")
-    @ApiMessageResponse("Lấy permission theo id thành công")
+    @ApiMessageResponse("permission.success.get.single")
     public ResponseEntity<PermissionResponse> getPermissionById(
         @PathVariable("id") Long id
     ) {
@@ -68,8 +66,8 @@ public class PermissionController {
     }
 
     @GetMapping("")
-    @ApiMessageResponse("Lấy danh sách permission thành công")
-    public ResponseEntity<PaginationDTO> getAllPermission(
+    @ApiMessageResponse("permission.success.get.all")
+    public ResponseEntity<PaginationResponse> getAllPermission(
         Pageable pageable,
         @Filter Specification<Permission> spec
     ) {
@@ -77,6 +75,7 @@ public class PermissionController {
     }
     
     @DeleteMapping("/{id}")
+    @ApiMessageResponse("permission.success.delete")
     public void deletePermissionById(
         @PathVariable("id") Long id
     ){

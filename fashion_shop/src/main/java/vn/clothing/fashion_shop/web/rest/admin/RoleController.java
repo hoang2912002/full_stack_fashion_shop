@@ -20,8 +20,8 @@ import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Role;
 import vn.clothing.fashion_shop.mapper.RoleMapper;
 import vn.clothing.fashion_shop.service.RoleService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.RoleRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.RoleResponse;
 
 
@@ -35,7 +35,7 @@ public class RoleController {
     private final RoleMapper roleMapper;
 
     @PostMapping("")
-    @ApiMessageResponse("Thêm mới role thành công")
+    @ApiMessageResponse("role.success.create")
     public ResponseEntity<RoleResponse> createRole(
         @RequestBody @Valid RoleRequest role
     ) {        
@@ -43,7 +43,7 @@ public class RoleController {
     }
     
     @PutMapping("")
-    @ApiMessageResponse("Cập nhật role thành công")
+    @ApiMessageResponse("role.success.update")
     public ResponseEntity<RoleResponse> updateRole(
         @RequestBody @Valid RoleRequest role
     ) {
@@ -51,13 +51,14 @@ public class RoleController {
     }
 
     @GetMapping("/{id}")
-    @ApiMessageResponse("Lấy vai trò theo id thành công")
+    @ApiMessageResponse("role.success.get.single")
     public ResponseEntity<RoleResponse> getRoleById(@PathVariable("id") Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(this.roleService.getRoleById(id));
     }
 
     @GetMapping("")
-    public ResponseEntity<PaginationDTO> getAllRole(
+    @ApiMessageResponse("role.success.get.all")
+    public ResponseEntity<PaginationResponse> getAllRole(
         Pageable pageable,
         @Filter Specification<Role> spec
     ) {

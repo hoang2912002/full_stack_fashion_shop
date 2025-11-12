@@ -11,9 +11,9 @@ import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.Category;
 import vn.clothing.fashion_shop.mapper.CategoryMapper;
 import vn.clothing.fashion_shop.service.CategoryService;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.CategoryRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.CategoryResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +36,7 @@ public class CategoryController {
     private final CategoryMapper categoryMapper;
     
     @PostMapping("")
-    @ApiMessageResponse("Thêm mới danh mục thành công")
+    @ApiMessageResponse("category.success.create")
     public ResponseEntity<CategoryResponse> createCategory(
         @RequestBody @Valid CategoryRequest category
     ) {
@@ -44,7 +44,7 @@ public class CategoryController {
     }
 
     @PutMapping("")
-    @ApiMessageResponse("Cập nhật danh mục thành công")
+    @ApiMessageResponse("category.success.update")
     public ResponseEntity<CategoryResponse> updateCategory(
         @RequestBody @Valid CategoryRequest category
     ) {        
@@ -54,7 +54,7 @@ public class CategoryController {
     }
     
     @GetMapping("/{id}")
-    @ApiMessageResponse("Lấy danh mục theo id thành công")
+    @ApiMessageResponse("category.success.get.single")
     public ResponseEntity<CategoryResponse> getCategoryById(
         @PathVariable("id") Long id
     ) {
@@ -62,8 +62,8 @@ public class CategoryController {
     }
 
     @GetMapping("")
-    @ApiMessageResponse("Lấy danh mục sản phẩm thành công")
-    public ResponseEntity<PaginationDTO> getAllCategory(
+    @ApiMessageResponse("category.success.get.all")
+    public ResponseEntity<PaginationResponse> getAllCategory(
         Pageable pageable,
         @Filter Specification spec
     ) {
@@ -71,7 +71,7 @@ public class CategoryController {
     }
     
     @DeleteMapping("/{id}")
-    @ApiMessageResponse("Xóa danh mục theo id thành công")
+    @ApiMessageResponse("category.success.delete")
     public ResponseEntity<Void> deleteCategoryById(
         @PathVariable("id") Long id
     ){

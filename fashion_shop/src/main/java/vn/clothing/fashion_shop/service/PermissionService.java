@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import vn.clothing.fashion_shop.constants.util.ConvertPagination;
 import vn.clothing.fashion_shop.domain.Permission;
 import vn.clothing.fashion_shop.repository.PermissionRepository;
-import vn.clothing.fashion_shop.web.rest.DTO.PaginationDTO;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PermissionResponse;
 
 public interface PermissionService {
@@ -24,7 +24,7 @@ public interface PermissionService {
 
     PermissionResponse getPermissionById(Long id);
 
-    PaginationDTO getAllPermission(Pageable pageable, Specification specification);
+    PaginationResponse getAllPermission(Pageable pageable, Specification specification);
 
     boolean checkPermissionExist(String apiPath, String method, Long checkId);
 

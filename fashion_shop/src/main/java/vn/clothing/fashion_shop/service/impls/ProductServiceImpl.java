@@ -231,4 +231,15 @@ public class ProductServiceImpl implements ProductService{
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Product> findListProductById(List<Long> id){
+        try {
+            return this.productRepository.findAllByIdIn(id);
+        } catch (Exception e) {
+            log.error("[findListProductById] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
 }

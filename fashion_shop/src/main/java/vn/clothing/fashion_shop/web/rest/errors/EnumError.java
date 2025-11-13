@@ -14,11 +14,16 @@ public enum EnumError {
     USER_ERR_NOT_FOUND_ID("USER-CATE_NF","Not found user with id:",HttpStatus.BAD_REQUEST),
     USER_ERR_NOT_FOUND_EMAIL("USER-CATE_NF-EMAIL","Not found user with email:",HttpStatus.BAD_REQUEST),
     USER_INVALID_REFRESH_TOKEN("USER-INVALID-REFRESH_TOKEN","User already with invalid Refresh token:",HttpStatus.BAD_REQUEST),
+    
     //----------------Product-------------------
     PRODUCT_DATA_EXISTED_NAME("PRODUCT-DTE-NAME","Product already exists with the given Name:",HttpStatus.CONFLICT),
     PRODUCT_ERR_NOT_FOUND_ID("PRODUCT-CATE_NF","Not found product with id:",HttpStatus.BAD_REQUEST),
    
-    //----------------Product-------------------
+    //----------------Promotion-------------------
+    PROMOTION_DATA_EXISTED_CODE("PROMOTION-DTE-CODE","Promotion already exists with the given Code:",HttpStatus.CONFLICT),
+    PROMOTION_ERR_NOT_FOUND_ID("PROMOTION-CATE_NF","Not found promotion with id:",HttpStatus.BAD_REQUEST),
+   
+    //----------------Category-------------------
     CATEGORY_DATA_EXISTED_ID("CATEGORY-DTE-ID","Category already exists with the given Id:",HttpStatus.CONFLICT),
     CATEGORY_DATA_EXISTED_SLUG("CATEGORY-DTE-SLUG","Category already exists with the given Slug:",HttpStatus.CONFLICT),
     CATEGORY_ERR_NOT_FOUND_ID("CATEGORY-CATE_NF","Not found category with id:",HttpStatus.BAD_REQUEST),

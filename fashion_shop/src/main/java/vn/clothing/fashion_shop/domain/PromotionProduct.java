@@ -45,6 +45,6 @@ public class PromotionProduct extends AbstractAuditingEntity {
     
     @ManyToOne()
     @JoinColumn(name = "category_id")
-        @JsonBackReference
+    @JsonBackReference
     private Category category;
 }

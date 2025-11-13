@@ -1,5 +1,7 @@
 package vn.clothing.fashion_shop.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import vn.clothing.fashion_shop.domain.Category;
@@ -12,6 +14,7 @@ public interface CategoryService {
     CategoryResponse getCategoryById(Long id);
     PaginationResponse getAllCategory(Specification spec, Pageable pageable);
     Category findCategoryBySlug(String slug, Long checkId);
+    List<Category> findListCategoryById(List<Long> ids);
     Category findRawCategoryById(Long id);
     boolean isLeaf(Category category);
 }

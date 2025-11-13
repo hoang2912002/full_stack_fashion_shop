@@ -123,6 +123,17 @@ public class CategoryServiceImpl implements CategoryService {
     
     @Override
     @Transactional(readOnly = true)
+    public List<Category> findListCategoryById(List<Long> id){
+        try {
+            return this.categoryRepository.findAllByIdIn(id);
+        } catch (Exception e) {
+            log.error("[findListCategoryById] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Category findCategoryBySlug(String slug, Long checkId){
         try {
             Optional<Category> cOptional = checkId == null ? this.categoryRepository.findBySlug(slug) : this.categoryRepository.findBySlugAndIdNot(slug,checkId);

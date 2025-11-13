@@ -45,9 +45,5 @@ public class ProductResponse {
     public static class InnerProductResponse {
         private Long id;
         private String name;
-        private Double price;
-        private String thumbnail;
-        private int quantity;
-        private String description;
     }
  }

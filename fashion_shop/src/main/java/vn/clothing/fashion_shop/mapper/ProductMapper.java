@@ -11,6 +11,7 @@ import org.mapstruct.factory.Mappers;
 import vn.clothing.fashion_shop.domain.Product;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.ProductRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductResponse.InnerProductResponse;
 
 @Mapper(
     componentModel = "spring",
@@ -36,6 +37,9 @@ public interface ProductMapper extends EntityMapper<ProductResponse, Product> {
     List<ProductResponse> toDto(List<Product> products);
 
     Product toEntity(ProductResponse dto);
+
+    @Named("toMiniDto")
+    InnerProductResponse toMinDto(Product product);
 
     @Named("toDetailDto")
     @Mapping(target = "price", expression = "java(String.format(\"%,.0f ₫\", product.getPrice()))")

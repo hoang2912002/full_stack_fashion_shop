@@ -53,8 +53,6 @@ public class Category extends AbstractAuditingEntity  {
     // 🔹 danh sách category con
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     @JsonManagedReference
-    // @Where(clause = "activated = true")
-
     //@JsonIgnoreProperties: Khi serialize Category sang JSON, bỏ qua luôn 2 field children và parent.
     //Do mình để ở relationship cho nên là khi lấy children đầu tiên ra nó kèm theo điều kiện này nên chỉ lấy 1 cấp
     // @JsonIgnoreProperties({"children", "parent"})  // bỏ qua children cấp 2 trở đi

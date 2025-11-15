@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductResponse.InnerProductResponse;
 @Data
 @Builder
 @NoArgsConstructor
@@ -22,6 +23,7 @@ public class CategoryResponse {
     private String updatedBy;
     private Instant updatedAt;
     private boolean activated;
+    // private InnerProductResponse products;
 
     @Data
     @Builder
@@ -31,5 +33,10 @@ public class CategoryResponse {
         private Long id;
         private String name;
         private String slug;
+    }
+
+
+    public static class InnerCategoryTreeResponse {
+        
     }
 }

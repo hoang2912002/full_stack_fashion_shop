@@ -1,9 +1,15 @@
 package vn.clothing.fashion_shop.service.impls;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.BeanUtils;
@@ -84,7 +90,6 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             final Page<Category> categories = this.categoryRepository.findAll(spec, pageable);
             final List<CategoryResponse> categoriesList = categoryMapper.toDto(categories.getContent());
-    
             return ConvertPagination.handleConvert(pageable, categories, categoriesList);
         } catch (Exception e) {
             log.error("[getAllCategory] Error: {}", e.getMessage(), e);
@@ -155,8 +160,71 @@ public class CategoryServiceImpl implements CategoryService {
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Category> findRawAllCategory(){
+        try {
+            List<Category> categories = this.categoryRepository.findAll();
+            return categories;
+        } catch (Exception e) {
+            log.error("[findRawAllCategory] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Category> getCategoryTreeStartByListId(List<Long> ids){
+        try {
+            List<Category> allCategories = categoryRepository.findAll();
+
+            // 2️⃣ Build map id → Category để lookup nhanh
+            Map<Long, Category> categoryMap = allCategories.stream()
+                    .collect(Collectors.toMap(Category::getId, Function.identity()));
+
+            // 3️⃣ Build map parentId → list childId để traverse cây bằng id
+            Map<Long, List<Long>> childrenMapById = allCategories.stream()
+                    .filter(c -> c.getParent() != null)
+                    .collect(Collectors.groupingBy(
+                            c -> c.getParent().getId(),
+                            Collectors.mapping(Category::getId, Collectors.toList())
+                    ));
+
+            // 4️⃣ Duyệt từng rootId, lấy tất cả các node con (subtree)
+            Set<Long> allSubtreeIds = new HashSet<>();
+            for (Long rootId : ids) {
+                //Dùng stack để thực hiện DFS (Depth-First Search).
+                //ArrayDeque với push và pop theo cơ chế LIFO → Last In First Out.
+                Deque<Long> stack = new ArrayDeque<>();
+                stack.push(rootId);
+
+                while (!stack.isEmpty()) {
+                    Long currentId = stack.pop();
+                    if (allSubtreeIds.add(currentId)) { // add xong mới push
+                        List<Long> childrenIds = childrenMapById.get(currentId);
+                        if (childrenIds != null) {
+                            stack.addAll(childrenIds);
+                        }
+                    }
+                }
+            }
+
+            // 5️⃣ Lọc leaf nodes (không có con)
+            List<Category> leafCategories = allSubtreeIds.stream()
+                    .map(categoryMap::get)
+                    .filter(cat -> !childrenMapById.containsKey(cat.getId()) || childrenMapById.get(cat.getId()).isEmpty())
+                    .toList();
+
+            return leafCategories;
+        } catch (Exception e) {
+            log.error("[getCategoryTreeStartByListId] Error: {}", e.getMessage());
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean isLeaf(Category category) {
         return category.getChildren() == null || category.getChildren().isEmpty();
     }

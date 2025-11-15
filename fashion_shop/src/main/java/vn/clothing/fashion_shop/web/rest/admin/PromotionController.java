@@ -59,8 +59,8 @@ public class PromotionController {
 
     @GetMapping("/{id}")
     @ApiMessageResponse("promotion.success.get.single")
-    public ResponseEntity<Promotion> getPromotionById(@PathVariable("id") Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(this.promotionService.getPromotionById(null));
+    public ResponseEntity<PromotionResponse> getPromotionById(@PathVariable("id") Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(this.promotionService.getPromotionById(id));
     }
     
     @GetMapping("")
@@ -69,7 +69,7 @@ public class PromotionController {
         Pageable pageable,
         @Filter Specification<Promotion> spec
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(this.promotionService.getAllPromotion(pageable, spec));
     }
     
 }

@@ -58,13 +58,7 @@ public class User extends AbstractAuditingEntity {
     @Column(columnDefinition = "MEDIUMTEXT")
     private String refreshToken;
 
-    // private Instant createdAt;
-    // private Instant updatedAt;
-    // private String createdBy;
-    // private String updatedBy;
-
     @OneToMany( mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
-    // @JsonIgnore
     @JsonManagedReference
     List<Address> addresses = new ArrayList<>();
 
@@ -72,15 +66,7 @@ public class User extends AbstractAuditingEntity {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    // @PrePersist
-    // public void handleSetCreatedUser(){
-    //     this.setCreatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
-    //     this.setCreatedAt(Instant.now());
-    // } 
-
-    // @PreUpdate
-    // public void handleSetUpdatedUser(){
-    //     this.setUpdatedBy(SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : null);
-    //     this.setUpdatedAt(Instant.now());
-    // } 
+    @OneToMany( mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    List<Order> orders = new ArrayList<>();
 }

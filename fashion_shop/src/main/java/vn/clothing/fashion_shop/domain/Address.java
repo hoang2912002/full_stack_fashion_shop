@@ -43,11 +43,6 @@ public class Address extends AbstractAuditingEntity {
     private String ward;
     private boolean activated;
 
-    // private Instant createdAt;
-    // private Instant updatedAt;
-    // private String createdBy;
-    // private String updatedBy;
-
     @ManyToOne()
     @JoinColumn(name = "user_id")
     @JsonBackReference

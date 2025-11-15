@@ -14,7 +14,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -53,11 +52,6 @@ public class Product extends AbstractAuditingEntity {
 
     private boolean activated;
 
-    // private Instant createdAt;
-    // private Instant updatedAt;
-    // private String createdBy;
-    // private String updatedBy;
-
     @ManyToOne()
     @JoinColumn(name = "manufacture_id")
     private Manufacture manufacture;
@@ -77,4 +71,8 @@ public class Product extends AbstractAuditingEntity {
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonManagedReference
     List<PromotionProduct> promotionProducts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @JsonBackReference
+    List<OrderDetail> orderDetails = new ArrayList<>();
 }

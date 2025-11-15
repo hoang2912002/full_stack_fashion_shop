@@ -1,12 +1,10 @@
 package vn.clothing.fashion_shop.domain;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -14,22 +12,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@Table(name = "product_skus")
-@Getter
-@Setter
+@Table(name = "order_details")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductSku extends AbstractAuditingEntity{
+public class OrderDetail extends AbstractAuditingEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,24 +33,32 @@ public class ProductSku extends AbstractAuditingEntity{
     public Long getId() {
         return this.id;
     }
+    
+    private Double priceOriginal; //giá gốc
+    private Double price; //giá sau giảm
+    private Double discountAmount; //giảm bao nhiêu
 
-    private String sku;
-    private Double price;
-    private Integer stock;
-
+    private Integer quantity;
+    private Double totalPrice; //price * quantity
     private boolean activated;
-    private String thumbnail;
 
-    @ManyToOne()
-    @JoinColumn(name = "product_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
     @JsonBackReference
+    private Order order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    @JsonManagedReference
     private Product product;
 
-    @OneToMany( mappedBy = "sku", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_sku_id")
     @JsonManagedReference
-    List<Variant> variants;
+    private ProductSku productSku;
 
-    @OneToMany(mappedBy = "productSku", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
-    @JsonBackReference
-    List<OrderDetail> orderDetails = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_id")
+    @JsonManagedReference
+    private Variant variant;
 }

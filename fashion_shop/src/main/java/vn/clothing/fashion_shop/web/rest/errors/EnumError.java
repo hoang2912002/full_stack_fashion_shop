@@ -50,6 +50,10 @@ public enum EnumError {
     OPTION_VALUE_DATA_EXISTED_VALUE("OPTION-VALUE-DTE-VALUE","Option value already exists with the given Value:",HttpStatus.CONFLICT),
     OPTION_VALUE_ERR_NOT_FOUND_ID("OPTION-VALUE-CATE_NF","Not found option value with id:",HttpStatus.BAD_REQUEST),
 
+    //----------------Coupon-------------------
+    COUPON_ERR_NOT_FOUND_ID("COUPON-CATE_NF","Not found coupon with id:",HttpStatus.CONFLICT),
+    COUPON_DATA_EXISTED_CODE("COUPON-DTE-CODE","Coupon already exists with the given Code:",HttpStatus.CONFLICT),
+
     //----------------Server-------------------
     INTERNAL_ERROR("ACC-S-999", "Unexpected internal server error", HttpStatus.INTERNAL_SERVER_ERROR)
     ;

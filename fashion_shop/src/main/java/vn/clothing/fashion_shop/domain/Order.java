@@ -84,6 +84,6 @@ public class Order extends AbstractAuditingEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_id")
-    @JsonBackReference
+    @JsonManagedReference
     private Coupon coupon;
 }

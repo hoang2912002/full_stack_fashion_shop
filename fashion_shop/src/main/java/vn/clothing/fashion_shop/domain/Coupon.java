@@ -5,10 +5,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.clothing.fashion_shop.constants.enumEntity.CouponEnum;
 @Entity
 @Table(name = "coupons")
 @Data
@@ -37,7 +41,8 @@ public class Coupon extends AbstractAuditingEntity {
     private String name;
     private String code;
 
-    private boolean type;
+    @Enumerated(EnumType.STRING)
+    private CouponEnum type;
     private Integer stock;
     private Instant startDate;
     private Instant endDate;
@@ -45,6 +50,6 @@ public class Coupon extends AbstractAuditingEntity {
     private boolean activated;
 
     @OneToMany( mappedBy = "coupon", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
-    @JsonManagedReference
+    @JsonBackReference
     List<Order> orders = new ArrayList<>();
 }

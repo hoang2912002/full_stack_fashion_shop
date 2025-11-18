@@ -15,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,4 +59,13 @@ public class ProductSku extends AbstractAuditingEntity{
     @OneToMany(mappedBy = "productSku", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonBackReference
     List<OrderDetail> orderDetails = new ArrayList<>();
+
+
+    @OneToOne(mappedBy = "productSku", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
+    @JsonManagedReference
+    private Inventory inventory;
+
+    @OneToMany( mappedBy = "productSku", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @JsonManagedReference
+    List<InventoryTransaction> inventoryTransactions = new ArrayList<>();
 }

@@ -62,6 +62,10 @@ public class Product extends AbstractAuditingEntity {
 
     @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
     @JsonManagedReference
+    List<Inventory> inventories = new ArrayList<>();
+
+    @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @JsonManagedReference
     List<ProductSku> productSkus = new ArrayList<>();
 
     @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)

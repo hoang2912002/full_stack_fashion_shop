@@ -2,6 +2,7 @@ package vn.clothing.fashion_shop.service.impls;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -18,9 +20,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import vn.clothing.fashion_shop.constants.enumEntity.InventoryTransactionTypeEnum;
 import vn.clothing.fashion_shop.constants.util.ConvertPagination;
+import vn.clothing.fashion_shop.constants.util.MessageUtil;
 import vn.clothing.fashion_shop.constants.util.SlugUtil;
 import vn.clothing.fashion_shop.domain.Category;
+import vn.clothing.fashion_shop.domain.Inventory;
+import vn.clothing.fashion_shop.domain.InventoryTransaction;
 import vn.clothing.fashion_shop.domain.Option;
 import vn.clothing.fashion_shop.domain.OptionValue;
 import vn.clothing.fashion_shop.domain.Product;
@@ -31,6 +37,8 @@ import vn.clothing.fashion_shop.mapper.OptionValueMapper;
 import vn.clothing.fashion_shop.mapper.ProductMapper;
 import vn.clothing.fashion_shop.repository.ProductRepository;
 import vn.clothing.fashion_shop.service.CategoryService;
+import vn.clothing.fashion_shop.service.InventoryService;
+import vn.clothing.fashion_shop.service.InventoryTransactionService;
 import vn.clothing.fashion_shop.service.OptionValueService;
 import vn.clothing.fashion_shop.service.ProductService;
 import vn.clothing.fashion_shop.service.ProductSkuService;
@@ -53,7 +61,9 @@ public class ProductServiceImpl implements ProductService{
     private final OptionMapper optionMapper;
     private final OptionValueMapper optionValueMapper;
     private final OptionValueService optionValueService;
-
+    private final InventoryService inventoryService;
+    private final InventoryTransactionService inventoryTransactionService;
+    private final MessageUtil messageUtil;
     
     @Override
     @Transactional(rollbackFor = ServiceException.class)
@@ -75,10 +85,17 @@ public class ProductServiceImpl implements ProductService{
     
     private ProductResponse upSertProduct(Product product, List<InnerVariantRequest> variants, Long checkId){
         try {
+            Locale locale = LocaleContextHolder.getLocale();
+            // 0. Nếu là UPDATE thì khóa PRODUCT trước
+            if (checkId != null) {
+                this.lockProductById(checkId);
+            }
+
             final String slug = SlugUtil.toSlug(product.getName());
             if (findRawProductBySlug(slug, checkId) != null) {
                 throw new ServiceException(EnumError.PRODUCT_DATA_EXISTED_NAME, "product.exist.name",Map.of("name", product.getName()));
             }
+
             final Category category = Optional.ofNullable(product.getCategory())
             .map(c -> categoryService.findRawCategoryById(c.getId()))
             .orElse(null);
@@ -90,15 +107,15 @@ public class ProductServiceImpl implements ProductService{
             product.setSlug(slug);
             product.setCategory(category);
 
-            // 3️⃣ Lưu Product chính
+            // 3️ Lưu Product chính
             Product createdProduct = productRepository.save(product);
 
-            // 4️⃣ Nếu có variant mới xử lý tiếp
+            // 4️ Nếu có variant mới xử lý tiếp
             if (variants == null || variants.isEmpty()) {
                 return productMapper.toDto(createdProduct);
             }
-
-            // 5️⃣ Lấy danh sách SKU ID và kiểm tra trùng
+            
+            // 5️ Lấy danh sách SKU ID và kiểm tra trùng
             final List<String> skuIds = variants.stream()
                     .map(v -> SlugUtil.toSlug(v.getSkuId()).toUpperCase())
                     .toList();
@@ -109,7 +126,7 @@ public class ProductServiceImpl implements ProductService{
                     .map(String::toUpperCase)
                     .collect(Collectors.toSet());
 
-            // 6️⃣ Lọc ra những SKU chưa tồn tại
+            // 6️ Lọc ra những SKU chưa tồn tại
             final List<ProductSku> newProductSkus = variants.stream()
                     .filter(v -> !existingSkuSet.contains(v.getSkuId().toUpperCase()))
                     .map(v -> ProductSku.builder()
@@ -121,10 +138,10 @@ public class ProductServiceImpl implements ProductService{
                             .build())
                     .toList();
 
-            // 7️⃣ Lưu danh sách SKU mới
+            // 7️ Lưu danh sách SKU mới
             final List<ProductSku> createdSkus = productSkuService.createListProductSku(newProductSkus);
 
-            // 8️⃣ Gom tất cả SKU vừa tạo + đã có
+            // 8️ Gom tất cả SKU vừa tạo + đã có
             Map<String, ProductSku> allSkuMap = Stream.concat(createdSkus.stream(), existingSkus.stream())
                     .collect(Collectors.toMap(s -> s.getSku().toUpperCase(), Function.identity(),
                         (a, b) -> a // tránh duplicate key
@@ -140,7 +157,7 @@ public class ProductServiceImpl implements ProductService{
                 this.optionValueService.getRawListOptionValueBySlug(optionValuesSlug).stream()
                 .collect(Collectors.toMap(OptionValue::getSlug, Function.identity()));
 
-            // 9️⃣ Tạo danh sách Variant
+            // 9 Tạo danh sách Variant
             final List<Variant> variantEntities = variants.stream()
             .filter(v -> allSkuMap.containsKey(v.getSkuId().toUpperCase()))
             .flatMap(v -> v.getOptionValues().stream()
@@ -156,12 +173,82 @@ public class ProductServiceImpl implements ProductService{
                         .optionValue(ov)
                         .build())
             )
-            // 3️⃣ collect thành list
             .collect(Collectors.toList());
 
             if (!variantEntities.isEmpty()) {
                 variantService.createListVariant(variantEntities);
-            }    
+            }   
+
+            
+            // 10 KHÓA INVENTORY THEO SKU
+            List<ProductSku> allSkusForLock = Stream.concat(createdSkus.stream(), existingSkus.stream())
+                .toList();
+            
+            List<Long> skuIdList = allSkusForLock.stream()
+                .map(ProductSku::getId)
+                .toList();
+
+            this.inventoryService.lockInventoryBySkuId(skuIdList);
+            
+            // 11 Gom lại sku để tạo tồn kho
+            // Map<Long, Inventory> oldInventoryMap  = this.inventoryService.findRawListInventoryBySku(
+            //     skuIdList)
+            //  .stream()
+            // .collect(Collectors.toMap(
+            //     inv -> inv.getProductSku().getId(),
+            //     inv -> inv
+            // ));
+
+            List<Inventory> inventoryEntities = allSkusForLock.stream()
+                .collect(Collectors.collectingAndThen(
+                Collectors.toMap(ProductSku::getId, s -> s, (s1, s2) -> s1), // distinct theo id
+                map -> map.values().stream()
+                    .map(s -> 
+                        // Inventory oldInv = oldInventoryMap.get(s.getId());
+                        Inventory.builder()
+                        .id(null)
+                        .activated(true)
+                        .product(createdProduct)
+                        .productSku(s)
+                        .quantityAvailable(product.getQuantity())
+                        .quantityReserved(0)
+                        .quantitySold(0)
+                        .build()
+                    )
+                    .toList()
+            ));
+            if (!inventoryEntities.isEmpty()) {
+                inventoryService.createListInventory(inventoryEntities);
+            }  
+
+            // 12 Tạo tổng quan giao dịch
+            List<InventoryTransaction> inventoryTransactionEntities = allSkusForLock.stream()
+            .collect(Collectors.collectingAndThen(
+                Collectors.toMap(ProductSku::getId, s -> s, (s1, s2) -> s1),
+                map -> map.values().stream()
+                    .map(s -> {
+                        String message = messageUtil.getMessage("inventory.transaction.import.product",s.getSku(), locale);
+                        return InventoryTransaction.builder()
+                        .id(null)
+                        .activated(true)
+                        .productSku(s)
+                        .beforeQuantity(0)
+                        .afterQuantity(s.getStock())
+                        .quantityChange(s.getStock())
+                        .type(InventoryTransactionTypeEnum.IMPORT)
+                        .referenceType("PURCHASE_ORDER")
+                        .referenceId(createdProduct.getId())
+                        .note(message)
+                        .build();
+                    })
+                    .toList()
+            ));
+            if (!inventoryTransactionEntities.isEmpty()) {
+                inventoryTransactionService.createListInventoryTransaction(inventoryTransactionEntities);
+            } 
+
+
+
 
             return productMapper.toDto(createdProduct);
         } catch (ServiceException e) {
@@ -239,6 +326,17 @@ public class ProductServiceImpl implements ProductService{
             return this.productRepository.findAllByIdIn(id);
         } catch (Exception e) {
             log.error("[findListProductById] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = ServiceException.class)
+    public Product lockProductById(Long id){
+        try {
+            return productRepository.lockProductById(id);
+        } catch (Exception e) {
+            log.error("[lockProductById] Error: {}", e.getMessage(), e);
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
     }

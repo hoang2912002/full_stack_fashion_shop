@@ -16,4 +16,5 @@ public interface ProductService {
     PaginationResponse getAllProduct(Pageable pageable, Specification spec);
     ProductResponse getProductById(Long id);
     List<Product> findListProductById(List<Long> ids);
+    Product lockProductById(Long id);
 }

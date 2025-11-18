@@ -9,12 +9,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import jakarta.persistence.LockModeType;
-import vn.clothing.fashion_shop.domain.ProductSku;
+import vn.clothing.fashion_shop.domain.Inventory;
 
-public interface ProductSkuRepository extends JpaRepository<ProductSku, Long>, JpaSpecificationExecutor<ProductSku> {
-    List<ProductSku> findAllBySkuIn(List<String> sku);
+public interface InventoryRepository extends JpaRepository<Inventory, Long>, JpaSpecificationExecutor<Inventory> {
+    List<Inventory> findAllByProductSkuIdIn(List<Long> skuIds);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT s FROM ProductSku s WHERE s.product.id = :productId")
-    List<ProductSku> lockSkuByProduct(@Param("productId") Long productId);
+    @Query("SELECT i FROM Inventory i WHERE i.productSku.id IN :skuIds")
+    List<Inventory> lockInventoryBySkuId(@Param("skuIds") List<Long> skuIds);
 }

@@ -23,7 +23,7 @@ public class ProductResponse {
     private String name;
     private String price;
     private String thumbnail;
-    private int quantity;
+    private Integer quantity;
     
     private String description;
     private String createdBy;

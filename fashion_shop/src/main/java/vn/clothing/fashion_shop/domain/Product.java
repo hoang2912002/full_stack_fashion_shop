@@ -45,7 +45,7 @@ public class Product extends AbstractAuditingEntity {
 
     private Double price;
     private String thumbnail;
-    private Integer quantity;
+    // private Integer quantity;
     
     @Column(columnDefinition = "MEDIUMTEXT")
     private String description;
@@ -60,23 +60,46 @@ public class Product extends AbstractAuditingEntity {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany( 
+        mappedBy = "product", 
+        fetch = FetchType.LAZY
+    )
     @JsonManagedReference
     List<Inventory> inventories = new ArrayList<>();
 
-    @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany( 
+        mappedBy = "product", 
+        fetch = FetchType.LAZY,
+        cascade = CascadeType.PERSIST
+    )
     @JsonManagedReference
     List<ProductSku> productSkus = new ArrayList<>();
 
-    @OneToMany( mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany( 
+        mappedBy = "product", 
+        fetch = FetchType.LAZY,
+        // cascade = CascadeType.ALL,
+        // orphanRemoval = true
+        cascade = CascadeType.PERSIST
+    )
     @JsonManagedReference
     List<Variant> variants = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(
+        mappedBy = "product", 
+        fetch = FetchType.LAZY,
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
     @JsonManagedReference
     List<PromotionProduct> promotionProducts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(
+        mappedBy = "product", 
+        fetch = FetchType.LAZY
+        // cascade = CascadeType.ALL,
+        // orphanRemoval = true
+    )
     @JsonBackReference
     List<OrderDetail> orderDetails = new ArrayList<>();
 }

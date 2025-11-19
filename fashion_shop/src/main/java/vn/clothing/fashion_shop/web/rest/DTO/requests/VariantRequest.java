@@ -40,7 +40,7 @@ public class VariantRequest {
         private String skuId;
         private List<String> optionValues;
         private Double price;
-        private int stock;
+        private Integer stock;
         private String thumbnail;
     }
 }

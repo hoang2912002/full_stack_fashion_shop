@@ -41,22 +41,22 @@ public class Variant extends AbstractAuditingEntity{
 
     private boolean activated;
 
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     @JsonBackReference
     private Product product;
     
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sku_id")
     @JsonBackReference
     private ProductSku sku;
 
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "option_id")
     @JsonManagedReference
     private Option option;
 
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "option_value_id")
     @JsonManagedReference
     private OptionValue optionValue;

@@ -44,11 +44,21 @@ public class Option extends AbstractAuditingEntity  {
     // private String createdBy;
     // private String updatedBy;
 
-    @OneToMany( mappedBy = "option", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany( 
+        mappedBy = "option", 
+        fetch = FetchType.LAZY
+        // cascade = CascadeType.ALL,
+        // orphanRemoval = true
+    )
     @JsonBackReference
     List<Variant> variants;
 
-    @OneToMany( mappedBy = "option", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany( 
+        mappedBy = "option", 
+        fetch = FetchType.LAZY
+        // cascade = CascadeType.ALL,
+        // orphanRemoval = true
+    )
     @JsonBackReference
     List<OptionValue> optionValues;
 }

@@ -8,25 +8,9 @@ import org.springframework.stereotype.Service;
 import vn.clothing.fashion_shop.domain.Variant;
 import vn.clothing.fashion_shop.repository.VariantRepository;
 
-@Service
-public class VariantService {
-    
-    private final VariantRepository variantRepository;
-
-    public VariantService(VariantRepository variantRepository) {
-        this.variantRepository = variantRepository;
-    }
-
-    public List<Variant> createListVariant(List<Variant> variant){
-        return this.variantRepository.saveAllAndFlush(variant);
-    }
-    
-    public Variant createVariant(Variant variant){
-        return this.variantRepository.saveAndFlush(variant);
-    }
-
-    public Variant findVariantFromProduct(Variant variant){
-        Optional<Variant> check = this.variantRepository.findByProductIdAndSkuIdAndOptionIdAndOptionValueId(variant.getProduct(),variant.getSku(),variant.getOption(),variant.getOptionValue());
-        return check.isPresent() ? check.get() : null;
-    }
+public interface VariantService {
+    List<Variant> createListVariant(List<Variant> variant);
+    Variant createVariant(Variant variant);
+    Variant findVariantFromProduct(Variant variant);
+    void deleteAllVariantByProductId(Long productId);
 }

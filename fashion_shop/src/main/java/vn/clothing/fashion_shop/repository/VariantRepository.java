@@ -18,4 +18,6 @@ public interface VariantRepository extends JpaRepository<Variant, Long>, JpaSpec
         Option option,
         OptionValue optionValue
     );
+
+    void deleteAllByProductId(Long productId);
 }

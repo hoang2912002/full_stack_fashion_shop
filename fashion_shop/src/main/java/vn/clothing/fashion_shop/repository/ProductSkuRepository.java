@@ -13,6 +13,8 @@ import vn.clothing.fashion_shop.domain.ProductSku;
 
 public interface ProductSkuRepository extends JpaRepository<ProductSku, Long>, JpaSpecificationExecutor<ProductSku> {
     List<ProductSku> findAllBySkuIn(List<String> sku);
+    List<ProductSku> findAllByIdIn(List<Long> id);
+    List<ProductSku> findAllByProductId(Long id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM ProductSku s WHERE s.product.id = :productId")

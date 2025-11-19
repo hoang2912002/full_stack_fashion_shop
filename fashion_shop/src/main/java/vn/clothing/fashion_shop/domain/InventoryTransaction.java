@@ -2,10 +2,12 @@ package vn.clothing.fashion_shop.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,8 +36,8 @@ public class InventoryTransaction extends AbstractAuditingEntity {
         return this.id;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_sku_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "product_sku_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @JsonBackReference
     private ProductSku productSku;
 

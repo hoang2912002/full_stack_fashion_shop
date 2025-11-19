@@ -24,10 +24,6 @@ public class ProductMatchingValidator implements ConstraintValidator<ProductMatc
         //     valid = false;
         // }
 
-        if(value.getQuantity() < 0){
-            addViolation(context, "product.quantity.limit", "quantity");
-            valid = false;
-        }
         if(value.getCategory().getId() == null){
             addViolation(context, "product.categoryid.notnull", "category");
             valid = false;

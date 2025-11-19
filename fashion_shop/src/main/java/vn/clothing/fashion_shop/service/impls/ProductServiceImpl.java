@@ -1,5 +1,6 @@
 package vn.clothing.fashion_shop.service.impls;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -43,6 +44,7 @@ import vn.clothing.fashion_shop.service.OptionValueService;
 import vn.clothing.fashion_shop.service.ProductService;
 import vn.clothing.fashion_shop.service.ProductSkuService;
 import vn.clothing.fashion_shop.service.VariantService;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.InventoryRequest.BaseInventoryRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.VariantRequest.InnerVariantRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductResponse;
@@ -80,6 +82,12 @@ public class ProductServiceImpl implements ProductService{
             throw new ServiceException(EnumError.PRODUCT_ERR_NOT_FOUND_ID, "product.not.found.id",Map.of("id", product.getId()));
 
         }
+        final List<Long> skuIdListDelete = productSkuService.findListProductSkuByProductId(product.getId()).stream()
+            .map(ProductSku::getId)
+            .toList();
+        // Xóa Skus
+        this.productSkuService.deleteProductSkuByListId(skuIdListDelete);
+        this.variantService.deleteAllVariantByProductId(product.getId());
         return upSertProduct(product, variants, product.getId());
     }
     
@@ -116,28 +124,41 @@ public class ProductServiceImpl implements ProductService{
             }
             
             // 5️ Lấy danh sách SKU ID và kiểm tra trùng
-            final List<String> skuIds = variants.stream()
-                    .map(v -> SlugUtil.toSlug(v.getSkuId()).toUpperCase())
-                    .toList();
-
-            final List<ProductSku> existingSkus = productSkuService.findListProductSku(skuIds);
+            List<ProductSku> existingSkus = productSkuService.findListProductSkuByProductId(createdProduct.getId());
+            
             final Set<String> existingSkuSet = existingSkus.stream()
-                    .map(ProductSku::getSku)
-                    .map(String::toUpperCase)
-                    .collect(Collectors.toSet());
-
+                .map(ProductSku::getSku)
+                .map(String::toUpperCase)
+                .collect(Collectors.toSet());
+            
+            final Map<String, ProductSku> existingSkusMap = existingSkus.stream()
+                .collect(Collectors.toMap(s -> s.getSku().toUpperCase(), Function.identity(),
+                    (a, b) -> a
+                ));
             // 6️ Lọc ra những SKU chưa tồn tại
-            final List<ProductSku> newProductSkus = variants.stream()
-                    .filter(v -> !existingSkuSet.contains(v.getSkuId().toUpperCase()))
-                    .map(v -> ProductSku.builder()
+            final List<ProductSku> newProductSkus = new ArrayList<>();
+            
+            
+            for (InnerVariantRequest v : variants) {
+                ProductSku sku = existingSkusMap.getOrDefault(v.getSkuId().toUpperCase(), new ProductSku());
+                if (sku.getId() == null) {
+                    // CREATE NEW SKU
+                    ProductSku newSku = ProductSku.builder()
                             .sku(v.getSkuId().toUpperCase())
                             .price(v.getPrice())
-                            .stock(v.getStock())
                             .thumbnail(v.getThumbnail())
                             .product(createdProduct)
-                            .build())
-                    .toList();
-
+                            .build();
+                    newProductSkus.add(newSku);
+                } else {
+                    // UPDATE EXISTING SKU
+                    sku.setSku(v.getSkuId().toUpperCase());
+                    sku.setPrice(v.getPrice());
+                    sku.setThumbnail(v.getThumbnail());
+                    newProductSkus.add(sku);
+                }
+            }
+            
             // 7️ Lưu danh sách SKU mới
             final List<ProductSku> createdSkus = productSkuService.createListProductSku(newProductSkus);
 
@@ -161,16 +182,14 @@ public class ProductServiceImpl implements ProductService{
             final List<Variant> variantEntities = variants.stream()
             .filter(v -> allSkuMap.containsKey(v.getSkuId().toUpperCase()))
             .flatMap(v -> v.getOptionValues().stream()
-                //cú pháp method reference (tham chiếu hàm)
-                //giống lambda => optionValueMap.get(optionValueSlug);
                 .map(optionValueMap::get)
-                //check null
                 .filter(Objects::nonNull)
                 .map(ov -> Variant.builder()
                         .product(createdProduct)
                         .sku(allSkuMap.get(v.getSkuId().toUpperCase()))
                         .option(ov.getOption())
                         .optionValue(ov)
+                        .activated(true)
                         .build())
             )
             .collect(Collectors.toList());
@@ -178,78 +197,70 @@ public class ProductServiceImpl implements ProductService{
             if (!variantEntities.isEmpty()) {
                 variantService.createListVariant(variantEntities);
             }   
-
             
-            // 10 KHÓA INVENTORY THEO SKU
-            List<ProductSku> allSkusForLock = Stream.concat(createdSkus.stream(), existingSkus.stream())
-                .toList();
-            
-            List<Long> skuIdList = allSkusForLock.stream()
-                .map(ProductSku::getId)
-                .toList();
+            List<BaseInventoryRequest> imports = new ArrayList<>();
+            List<BaseInventoryRequest> adjustment = new ArrayList<>();
 
-            this.inventoryService.lockInventoryBySkuId(skuIdList);
-            
-            // 11 Gom lại sku để tạo tồn kho
-            // Map<Long, Inventory> oldInventoryMap  = this.inventoryService.findRawListInventoryBySku(
-            //     skuIdList)
-            //  .stream()
-            // .collect(Collectors.toMap(
-            //     inv -> inv.getProductSku().getId(),
-            //     inv -> inv
-            // ));
+            Map<String, Integer> requestedStockBySkuCode = variants.stream()
+                .collect(Collectors.toMap(
+                    v -> SlugUtil.toSlug(v.getSkuId()).toUpperCase(),
+                    v -> v.getStock() == null ? 0 : v.getStock(),
+                    (a, b) -> b
+                ));
 
-            List<Inventory> inventoryEntities = allSkusForLock.stream()
-                .collect(Collectors.collectingAndThen(
-                Collectors.toMap(ProductSku::getId, s -> s, (s1, s2) -> s1), // distinct theo id
-                map -> map.values().stream()
-                    .map(s -> 
-                        // Inventory oldInv = oldInventoryMap.get(s.getId());
-                        Inventory.builder()
-                        .id(null)
-                        .activated(true)
-                        .product(createdProduct)
-                        .productSku(s)
-                        .quantityAvailable(product.getQuantity())
-                        .quantityReserved(0)
-                        .quantitySold(0)
-                        .build()
-                    )
-                    .toList()
-            ));
-            if (!inventoryEntities.isEmpty()) {
-                inventoryService.createListInventory(inventoryEntities);
-            }  
-
-            // 12 Tạo tổng quan giao dịch
-            List<InventoryTransaction> inventoryTransactionEntities = allSkusForLock.stream()
-            .collect(Collectors.collectingAndThen(
-                Collectors.toMap(ProductSku::getId, s -> s, (s1, s2) -> s1),
-                map -> map.values().stream()
-                    .map(s -> {
+            if(checkId == null){
+                // Import số lượng sản phẩm tồn kho
+                imports = allSkuMap.values().stream()
+                .filter(s -> {
+                    Integer requested = requestedStockBySkuCode.getOrDefault(s.getSku().toUpperCase(), 0);
+                    return requested != null && requested > 0;
+                })
+                .map(
+                    s -> {
+                        Integer requested = requestedStockBySkuCode.getOrDefault(s.getSku().toUpperCase(), 0);
                         String message = messageUtil.getMessage("inventory.transaction.import.product",s.getSku(), locale);
-                        return InventoryTransaction.builder()
-                        .id(null)
-                        .activated(true)
-                        .productSku(s)
-                        .beforeQuantity(0)
-                        .afterQuantity(s.getStock())
-                        .quantityChange(s.getStock())
-                        .type(InventoryTransactionTypeEnum.IMPORT)
-                        .referenceType("PURCHASE_ORDER")
-                        .referenceId(createdProduct.getId())
-                        .note(message)
-                        .build();
-                    })
-                    .toList()
-            ));
-            if (!inventoryTransactionEntities.isEmpty()) {
-                inventoryTransactionService.createListInventoryTransaction(inventoryTransactionEntities);
-            } 
+                        return BaseInventoryRequest.builder()
+                            .id(null)
+                            .skuId(s.getId())
+                            .quantity(requested)
+                            .referenceType("IMPORT_PRODUCT") // IMPORT
+                            .referenceId(createdProduct.getId())
+                            .note(message)
+                            .build();
+                    }
+                ).toList();
+            } else{
+                for (ProductSku sku : allSkuMap.values()) {
+                    // int oldStock = skuById.getOrDefault(sku.getId(), sku).getStock() == null ? 0 : skuById.getOrDefault(sku.getId(), sku).getStock();
+                    int delta = requestedStockBySkuCode.getOrDefault(sku.getSku().toUpperCase(), 0);
+                    if (!existingSkuSet.contains(sku.getSku().toUpperCase())) {
+                        String note = messageUtil.getMessage("inventory.transaction.import.product", sku.getSku(), locale);
+                        imports.add(BaseInventoryRequest.builder()
+                            .skuId(sku.getId())
+                            .quantity(delta)
+                            .referenceType("IMPORT_PRODUCT")
+                            .referenceId(createdProduct.getId())
+                            .note(note)
+                            .build());
+                    } else{
+                        String note = messageUtil.getMessage("inventory.transaction.adjustment.product", sku.getSku(), locale);
+                        adjustment.add(BaseInventoryRequest.builder()
+                            .skuId(sku.getId())
+                            .quantity(delta)
+                            .referenceType("ADJUSTMENT_PRODUCT") // UPDATE
+                            .referenceId(createdProduct.getId())
+                            .note(note)
+                            .build());
+                    }
+                }
+            }
 
-
-
-
+            if (!imports.isEmpty()) {
+                inventoryService.importStock(imports, "SYSTEM");
+            }
+            if (!adjustment.isEmpty()) {
+                inventoryService.adjustmentStock(adjustment, "SYSTEM");
+            }
             return productMapper.toDto(createdProduct);
         } catch (ServiceException e) {
             throw e;

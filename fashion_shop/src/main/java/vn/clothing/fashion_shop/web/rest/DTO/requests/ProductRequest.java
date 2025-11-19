@@ -24,7 +24,7 @@ public class ProductRequest {
     private String name;
     private Double price;
     private String thumbnail;
-    private int quantity;
+    // private Integer quantity;
     
     private String description;
     private InnerManufactureRequest manufacture;

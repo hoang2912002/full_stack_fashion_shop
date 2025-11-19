@@ -13,7 +13,7 @@ import vn.clothing.fashion_shop.domain.Inventory;
 
 public interface InventoryRepository extends JpaRepository<Inventory, Long>, JpaSpecificationExecutor<Inventory> {
     List<Inventory> findAllByProductSkuIdIn(List<Long> skuIds);
-
+    boolean existsByProductSkuId(Long id);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT i FROM Inventory i WHERE i.productSku.id IN :skuIds")
     List<Inventory> lockInventoryBySkuId(@Param("skuIds") List<Long> skuIds);

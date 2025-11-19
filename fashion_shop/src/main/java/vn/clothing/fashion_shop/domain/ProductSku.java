@@ -42,7 +42,7 @@ public class ProductSku extends AbstractAuditingEntity{
 
     private String sku;
     private Double price;
-    private Integer stock;
+    // private Integer stock;
 
     private boolean activated;
     private String thumbnail;
@@ -52,20 +52,41 @@ public class ProductSku extends AbstractAuditingEntity{
     @JsonBackReference
     private Product product;
 
-    @OneToMany( mappedBy = "sku", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany( 
+        mappedBy = "sku",  
+        fetch = FetchType.LAZY,
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+        // cascade = CascadeType.PERSIST
+    )
     @JsonManagedReference
     List<Variant> variants;
 
-    @OneToMany(mappedBy = "productSku", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(
+        mappedBy = "productSku", 
+        fetch = FetchType.LAZY
+        // cascade = CascadeType.ALL,
+        // orphanRemoval = true
+    )
     @JsonBackReference
     List<OrderDetail> orderDetails = new ArrayList<>();
 
 
-    @OneToOne(mappedBy = "productSku", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
+    @OneToOne(
+        mappedBy = "productSku", 
+        fetch = FetchType.LAZY 
+        // cascade = CascadeType.ALL, 
+        // optional = true
+    )
     @JsonManagedReference
     private Inventory inventory;
 
-    @OneToMany( mappedBy = "productSku", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany( 
+        mappedBy = "productSku", 
+        fetch = FetchType.LAZY
+        // cascade = CascadeType.ALL,
+        // orphanRemoval = true
+    )
     @JsonManagedReference
     List<InventoryTransaction> inventoryTransactions = new ArrayList<>();
 }

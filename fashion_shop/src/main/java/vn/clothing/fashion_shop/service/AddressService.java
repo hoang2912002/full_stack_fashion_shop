@@ -12,5 +12,4 @@ public interface AddressService {
     Address saveAddress(Address address);
 
     <T> List<T> handleAddressesForUser(User updateUser, List<Address> inputAddresses,Function<Address, T> mapper);
-
 }

@@ -44,9 +44,15 @@ public class VariantServiceImpl implements VariantService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Variant findVariantFromProduct(Variant variant){
-        Optional<Variant> check = this.variantRepository.findByProductIdAndSkuIdAndOptionIdAndOptionValueId(variant.getProduct(),variant.getSku(),variant.getOption(),variant.getOptionValue());
-        return check.isPresent() ? check.get() : null;
+        try {
+            Optional<Variant> check = this.variantRepository.findByProductIdAndSkuIdAndOptionIdAndOptionValueId(variant.getProduct(),variant.getSku(),variant.getOption(),variant.getOptionValue());
+            return check.isPresent() ? check.get() : null;
+        } catch (Exception e) {
+            log.error("[createVariant] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
 
     @Override

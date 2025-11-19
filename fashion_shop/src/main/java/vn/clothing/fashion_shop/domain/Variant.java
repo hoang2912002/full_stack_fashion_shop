@@ -61,7 +61,7 @@ public class Variant extends AbstractAuditingEntity{
     @JsonManagedReference
     private OptionValue optionValue;
 
-    @OneToMany(mappedBy = "variant", fetch = FetchType.LAZY)
-    @JsonBackReference
-    List<OrderDetail> orderDetails = new ArrayList<>();
+    // @OneToMany(mappedBy = "variant", fetch = FetchType.LAZY)
+    // @JsonBackReference
+    // List<OrderDetail> orderDetails = new ArrayList<>();
 }

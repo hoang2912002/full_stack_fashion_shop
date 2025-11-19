@@ -25,29 +25,71 @@ public class ProductSkuServiceImpl implements ProductSkuService {
     private final InventoryRepository inventoryRepository;
     private final OrderDetailService orderDetailService;
 
+    @Override
+    @Transactional(readOnly = true)
     public List<ProductSku> findListProductSku(List<String> productSkus){
-        return this.productSkuRepository.findAllBySkuIn(productSkus);
+        try {
+            return this.productSkuRepository.findAllBySkuIn(productSkus);
+        } catch (Exception e) {
+            log.error("[findListProductSku] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
     
+    @Override
+    @Transactional(readOnly = true)
     public List<ProductSku> findListProductSkuById(List<Long> ids){
-        return this.productSkuRepository.findAllByIdIn(ids);
+        try {
+            return this.productSkuRepository.findAllByIdIn(ids);
+        } catch (Exception e) {
+            log.error("[findListProductSkuById] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
     
+    @Override
+    @Transactional(readOnly = true)
     public List<ProductSku> findListProductSkuByProductId(Long id){
-        return this.productSkuRepository.findAllByProductId(id);
+        try {
+            return this.productSkuRepository.findAllByProductId(id);            
+        } catch (Exception e) {
+            log.error("[findListProductSkuByProductId] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public ProductSku findRawProductSkuById(Long id){
-        Optional<ProductSku> productSku = this.productSkuRepository.findById(id);
-        return productSku.isPresent() ? productSku.get() : null;
+        try {
+            Optional<ProductSku> productSku = this.productSkuRepository.findById(id);
+            return productSku.isPresent() ? productSku.get() : null;
+        } catch (Exception e) {
+            log.error("[findListProductSkuByProductId] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public List<ProductSku> createListProductSku(List<ProductSku> productSkus){
-        return this.productSkuRepository.saveAllAndFlush(productSkus);
+        try {
+            return this.productSkuRepository.saveAllAndFlush(productSkus);
+        } catch (Exception e) {
+            log.error("[createListProductSku] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public void deleteProductSkuById(Long id){
-        this.productSkuRepository.deleteById(id);
+        try {
+            this.productSkuRepository.deleteById(id);
+        } catch (Exception e) {
+            log.error("[createListProductSku] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
     
     @Override

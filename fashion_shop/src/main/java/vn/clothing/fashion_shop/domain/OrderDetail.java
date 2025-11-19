@@ -57,8 +57,8 @@ public class OrderDetail extends AbstractAuditingEntity{
     @JsonManagedReference
     private ProductSku productSku;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variant_id")
-    @JsonManagedReference
-    private Variant variant;
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "variant_id")
+    // @JsonManagedReference
+    // private Variant variant;
 }

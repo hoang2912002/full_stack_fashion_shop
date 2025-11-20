@@ -69,4 +69,8 @@ public class User extends AbstractAuditingEntity {
     @OneToMany( mappedBy = "user", fetch = FetchType.LAZY)
     @JsonManagedReference
     List<Order> orders = new ArrayList<>();
+    
+    @OneToMany( mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    List<ApprovalMaster> approvalMasters = new ArrayList<>();
 }

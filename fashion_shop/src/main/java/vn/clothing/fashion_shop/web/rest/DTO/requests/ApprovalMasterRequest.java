@@ -1,7 +1,6 @@
 package vn.clothing.fashion_shop.web.rest.DTO.requests;
 
 import java.time.Instant;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -11,25 +10,25 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import vn.clothing.fashion_shop.constants.enumEntity.GenderEnum;
-import vn.clothing.fashion_shop.web.rest.DTO.requests.AddressRequest.InnerAddressRequest;
+import vn.clothing.fashion_shop.constants.enumEntity.ApprovalMasterEnum;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.RoleRequest.InnerRoleRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.UserRequest.InnerUserRequest;
+import vn.clothing.fashion_shop.web.validation.approval_master.ApprovalMasterMatching;
 
-@Builder
 @NoArgsConstructor
 @Data
 @AllArgsConstructor
-public class UserRequest {
+@Builder
+@ApprovalMasterMatching
+public class ApprovalMasterRequest {
     private Long id;
-    private String fullName;
-    private String email;
-    private String password;
+    private String entityType; // -- PRODUCT, INVENTORY, PURCHASE_ORDER...
+    private Integer step; // 1, 2, 3, 4
     @Enumerated(EnumType.STRING)
-    private GenderEnum gender;
-    private Instant dob;
-    private Integer age;
+    private ApprovalMasterEnum status;
+    private Boolean required;
     private InnerRoleRequest role;
-    private List<InnerAddressRequest> addresses;
+    private InnerUserRequest user;
     private boolean activated;
     private Instant createdAt;
     private Instant updatedAt;
@@ -38,11 +37,11 @@ public class UserRequest {
     @JsonProperty("isCreate")
     private boolean isCreate;
 
-    @Builder
     @NoArgsConstructor
     @Data
     @AllArgsConstructor
-    public static class InnerUserRequest {
+    @Builder
+    public static class InnerApprovalMasterRequest {
         private Long id;
-    } 
+    }
 }

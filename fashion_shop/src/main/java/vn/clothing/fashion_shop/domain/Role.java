@@ -58,7 +58,11 @@ public class Role extends AbstractAuditingEntity {
     inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private List<Permission> permissions;
 
-    @OneToMany( mappedBy = "role", fetch = FetchType.LAZY,cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany( mappedBy = "role", fetch = FetchType.LAZY)
     @JsonIgnore
     List<User> users;
+
+    @OneToMany( mappedBy = "role", fetch = FetchType.LAZY)
+    @JsonIgnore
+    List<ApprovalMaster> approvalMasters;
 }

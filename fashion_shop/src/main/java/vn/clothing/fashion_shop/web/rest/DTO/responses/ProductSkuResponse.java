@@ -19,7 +19,7 @@ public class ProductSkuResponse {
     private String sku;
     private Double price;
     private String thumbnail;
-    private Integer stock;
+    private Integer tempStock;
     
     private String createdBy;
     private Instant createdAt;

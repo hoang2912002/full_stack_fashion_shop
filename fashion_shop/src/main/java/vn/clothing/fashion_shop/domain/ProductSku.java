@@ -42,7 +42,7 @@ public class ProductSku extends AbstractAuditingEntity{
 
     private String sku;
     private Double price;
-    // private Integer stock;
+    private Integer tempStock; //Lưu tạm số lượng trong kho chờ duyệt
 
     private boolean activated;
     private String thumbnail;

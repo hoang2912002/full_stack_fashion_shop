@@ -18,7 +18,7 @@ public class ProductSkuRequest {
     private Long id;
     private String sku;
     private Double price;
-    private Integer stock;
+    private Integer tempStock;
     private String thumbnail;
     private String createdBy;
     private Instant createdAt;

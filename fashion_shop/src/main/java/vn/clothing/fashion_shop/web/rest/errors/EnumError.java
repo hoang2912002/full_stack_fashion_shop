@@ -58,6 +58,9 @@ public enum EnumError {
     INVENTORY_ERR_NOT_FOUND_ID("INVENTORY-CATE_NF","Not found inventory with id:",HttpStatus.CONFLICT),
     INVENTORY_DATA_EXISTED_CODE("INVENTORY-DTE-CODE","Inventory already exists with the given Code:",HttpStatus.CONFLICT),
 
+    //----------------ApprovalMaster-------------------
+    APPROVAL_MASTER_ERR_NOT_FOUND_ID("APPROVAL-MASTER-CATE_NF","Not found approval master with id:",HttpStatus.CONFLICT),
+    APPROVAL_MASTER_DATA_EXISTED_ENTITY_TYPE_STATUS_STEP("APPROVAL-MASTER-DTE-ENTITY_TYPE_STATUS_STEP","Approval master already exists with the given EntityType, Status, and Step:",HttpStatus.CONFLICT),
     //----------------Server-------------------
     INTERNAL_ERROR("ACC-S-999", "Unexpected internal server error", HttpStatus.INTERNAL_SERVER_ERROR)
     ;

@@ -21,13 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import vn.clothing.fashion_shop.constants.enumEntity.InventoryTransactionTypeEnum;
 import vn.clothing.fashion_shop.constants.util.ConvertPagination;
 import vn.clothing.fashion_shop.constants.util.MessageUtil;
 import vn.clothing.fashion_shop.constants.util.SlugUtil;
 import vn.clothing.fashion_shop.domain.Category;
-import vn.clothing.fashion_shop.domain.Inventory;
-import vn.clothing.fashion_shop.domain.InventoryTransaction;
 import vn.clothing.fashion_shop.domain.Option;
 import vn.clothing.fashion_shop.domain.OptionValue;
 import vn.clothing.fashion_shop.domain.Product;

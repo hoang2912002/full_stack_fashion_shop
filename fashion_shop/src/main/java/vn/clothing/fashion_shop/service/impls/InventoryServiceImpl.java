@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,11 +18,14 @@ import vn.clothing.fashion_shop.constants.enumEntity.InventoryTransactionTypeEnu
 import vn.clothing.fashion_shop.domain.Inventory;
 import vn.clothing.fashion_shop.domain.InventoryTransaction;
 import vn.clothing.fashion_shop.domain.ProductSku;
+import vn.clothing.fashion_shop.mapper.InventoryMapper;
 import vn.clothing.fashion_shop.repository.InventoryRepository;
 import vn.clothing.fashion_shop.service.InventoryService;
 import vn.clothing.fashion_shop.service.InventoryTransactionService;
 import vn.clothing.fashion_shop.service.ProductSkuService;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.InventoryRequest.BaseInventoryRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.InventoryResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.errors.EnumError;
 import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
 
@@ -29,6 +34,7 @@ import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
 @Slf4j
 public class InventoryServiceImpl implements InventoryService {
     private final InventoryRepository inventoryRepository;
+    private final InventoryMapper inventoryMapper;
     private final ProductSkuService productSkuService;
     private final InventoryTransactionService inventoryTransactionService;
     @Override
@@ -175,4 +181,59 @@ public class InventoryServiceImpl implements InventoryService {
         this.inventoryTransactionService.createListInventoryTransaction(toSaveTransactions);
     }
 
+    @Override
+    @Transactional(rollbackFor = ServiceException.class)
+    public InventoryResponse createInventory(Inventory inventory) {
+        log.info("[createInventory] start create inventory ....");
+        try {
+            return null;
+        } catch (Exception e) {
+            log.error("[createInventory] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
+
+    @Override
+    public InventoryResponse updateInventory(Inventory inventory) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateInventory'");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InventoryResponse getInventoryById(Long id) {
+        try {
+            Inventory inventory = this.findRawInventoryById(id);
+            if (inventory == null) {
+                throw new ServiceException(EnumError.INVENTORY_ERR_NOT_FOUND_ID, "inventory.not.found.id");
+            }
+            return inventoryMapper.toDto(inventory);
+        } catch (Exception e) {
+            log.error("[getInventoryById] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
+
+    @Override
+    public PaginationResponse getAllInventories(Pageable pageable, Specification specification) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllInventories'");
+    }
+
+    @Override
+    public void deleteInventoryById(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteInventoryById'");
+    }
+
+
+    public Inventory findRawInventoryById(Long id){
+        try {
+            Optional<Inventory> inventoryOpt = this.inventoryRepository.findById(id);
+            return inventoryOpt.isPresent() ? inventoryOpt.get() : null;
+        } catch (Exception e) {
+            log.error("[findRawInventoryById] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
 }

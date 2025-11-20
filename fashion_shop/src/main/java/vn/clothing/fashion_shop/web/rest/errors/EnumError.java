@@ -54,6 +54,10 @@ public enum EnumError {
     COUPON_ERR_NOT_FOUND_ID("COUPON-CATE_NF","Not found coupon with id:",HttpStatus.CONFLICT),
     COUPON_DATA_EXISTED_CODE("COUPON-DTE-CODE","Coupon already exists with the given Code:",HttpStatus.CONFLICT),
 
+    //----------------Inventory-------------------
+    INVENTORY_ERR_NOT_FOUND_ID("INVENTORY-CATE_NF","Not found inventory with id:",HttpStatus.CONFLICT),
+    INVENTORY_DATA_EXISTED_CODE("INVENTORY-DTE-CODE","Inventory already exists with the given Code:",HttpStatus.CONFLICT),
+
     //----------------Server-------------------
     INTERNAL_ERROR("ACC-S-999", "Unexpected internal server error", HttpStatus.INTERNAL_SERVER_ERROR)
     ;

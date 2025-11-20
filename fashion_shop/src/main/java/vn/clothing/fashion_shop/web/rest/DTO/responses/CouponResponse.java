@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import vn.clothing.fashion_shop.constants.enumEntity.CouponEnum;
 import vn.clothing.fashion_shop.web.validation.category.CategoryMatching;
 
-@CategoryMatching
+// @CategoryMatching
 @Data
 @Builder
 @NoArgsConstructor
@@ -32,7 +32,7 @@ public class CouponResponse {
     private Instant updatedAt;
     private boolean activated;
 
-    @CategoryMatching
+    // @CategoryMatching
     @Data
     @Builder
     @NoArgsConstructor

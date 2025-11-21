@@ -6,6 +6,7 @@ import org.hibernate.query.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 import vn.clothing.fashion_shop.domain.Inventory;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.InventoryRequest.BaseInventoryRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.InventoryResponse;
@@ -23,5 +24,7 @@ public interface InventoryService {
     InventoryResponse updateInventory(Inventory inventory);
     InventoryResponse getInventoryById(Long id);
     PaginationResponse getAllInventories(Pageable pageable, Specification specification);
+    Integer countTotalInventories(Long productId);
+    Inventory findRawInventoryById(Long id);
     void deleteInventoryById(Long id);
 }

@@ -1,5 +1,7 @@
 package vn.clothing.fashion_shop.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -16,4 +18,5 @@ public interface ApprovalMasterService {
     void deleteApprovalMasterById(Long id);
     ApprovalMaster findRawApprovalMasterById(Long id);
     ApprovalMaster findApprovalMasterByEntityStatusStep(String entityType, ApprovalMasterEnum status, Integer step, Long id);
+    List<ApprovalMaster> findRawAllApprovalMasterByEntityType(String entityType); 
 }

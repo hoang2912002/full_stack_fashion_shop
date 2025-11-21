@@ -18,7 +18,7 @@ public enum EnumError {
     //----------------Product-------------------
     PRODUCT_DATA_EXISTED_NAME("PRODUCT-DTE-NAME","Product already exists with the given Name:",HttpStatus.CONFLICT),
     PRODUCT_ERR_NOT_FOUND_ID("PRODUCT-CATE_NF","Not found product with id:",HttpStatus.BAD_REQUEST),
-   
+    PRODUCT_DATA_EXISTED_APPROVAL_PENDING("PRODUCT-DTE-APPROVAL-PENDING","Product already exists with the pending approval request:",HttpStatus.CONFLICT),
     //----------------Promotion-------------------
     PROMOTION_DATA_EXISTED_CODE("PROMOTION-DTE-CODE","Promotion already exists with the given Code:",HttpStatus.CONFLICT),
     PROMOTION_ERR_NOT_FOUND_ID("PROMOTION-CATE_NF","Not found promotion with id:",HttpStatus.BAD_REQUEST),
@@ -41,6 +41,7 @@ public enum EnumError {
     //----------------Permission-------------------
     PERMISSION_DATA_EXISTED_APIPATH("PERMISSION-DTE-APIPATH","Permission already exists with the given Api path:",HttpStatus.CONFLICT),
     PERMISSION_ERR_NOT_FOUND_ID("PERMISSION-CATE_NF","Not found permission with id:",HttpStatus.BAD_REQUEST),
+    PERMISSION_ACCESS_DENIED("PERMISSION-ACCESS-DENIED","You do not have permission to access this resource.",HttpStatus.FORBIDDEN),
 
     //----------------Option-------------------
     OPTION_DATA_EXISTED_NAME("OPTION-DTE-NAME","Option already exists with the given Name:",HttpStatus.CONFLICT),
@@ -57,10 +58,17 @@ public enum EnumError {
     //----------------Inventory-------------------
     INVENTORY_ERR_NOT_FOUND_ID("INVENTORY-CATE_NF","Not found inventory with id:",HttpStatus.CONFLICT),
     INVENTORY_DATA_EXISTED_CODE("INVENTORY-DTE-CODE","Inventory already exists with the given Code:",HttpStatus.CONFLICT),
+    INVENTORY_DATA_EXISTED_PRODUCT_ID( "INVENTORY-DTE-PRODUCT-ID","Inventory already exists with the given Product ID:",HttpStatus.CONFLICT),
 
     //----------------ApprovalMaster-------------------
     APPROVAL_MASTER_ERR_NOT_FOUND_ID("APPROVAL-MASTER-CATE_NF","Not found approval master with id:",HttpStatus.CONFLICT),
     APPROVAL_MASTER_DATA_EXISTED_ENTITY_TYPE_STATUS_STEP("APPROVAL-MASTER-DTE-ENTITY_TYPE_STATUS_STEP","Approval master already exists with the given EntityType, Status, and Step:",HttpStatus.CONFLICT),
+    APPROVAL_MASTER_DATA_STATUS_REJECTED_CANNOT_ADD_HISTORY("APPROVAL-MASTER-DTE-STATUS-REJECTED-CANNOT-ADD-HISTORY","Cannot add approval history to an approval master with REJECTED status:",HttpStatus.CONFLICT),
+    APPROVAL_MASTER_ERR_NOT_FOUND_ENTITY_TYPE_STATUS("APPROVAL-MASTER-CATE_NF-ENTITY_TYPE_STATUS","Not found approval master with EntityType and Status:",HttpStatus.CONFLICT),
+    
+    //----------------ApprovalHistory-------------------
+    APPROVAL_HISTORY_ERR_NOT_FOUND_ID("APPROVAL-HISTORY-CATE_NF","Not found approval history with id:",HttpStatus.CONFLICT),
+    
     //----------------Server-------------------
     INTERNAL_ERROR("ACC-S-999", "Unexpected internal server error", HttpStatus.INTERNAL_SERVER_ERROR)
     ;

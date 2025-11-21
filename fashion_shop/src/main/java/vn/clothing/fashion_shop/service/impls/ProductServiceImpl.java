@@ -1,5 +1,6 @@
 package vn.clothing.fashion_shop.service.impls;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -21,10 +22,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import vn.clothing.fashion_shop.constants.enumEntity.ApprovalMasterEnum;
 import vn.clothing.fashion_shop.constants.util.ConvertPagination;
 import vn.clothing.fashion_shop.constants.util.MessageUtil;
 import vn.clothing.fashion_shop.constants.util.SlugUtil;
+import vn.clothing.fashion_shop.domain.ApprovalHistory;
+import vn.clothing.fashion_shop.domain.ApprovalMaster;
 import vn.clothing.fashion_shop.domain.Category;
+import vn.clothing.fashion_shop.domain.Inventory;
 import vn.clothing.fashion_shop.domain.Option;
 import vn.clothing.fashion_shop.domain.OptionValue;
 import vn.clothing.fashion_shop.domain.Product;
@@ -33,7 +38,10 @@ import vn.clothing.fashion_shop.domain.Variant;
 import vn.clothing.fashion_shop.mapper.OptionMapper;
 import vn.clothing.fashion_shop.mapper.OptionValueMapper;
 import vn.clothing.fashion_shop.mapper.ProductMapper;
+import vn.clothing.fashion_shop.repository.InventoryRepository;
 import vn.clothing.fashion_shop.repository.ProductRepository;
+import vn.clothing.fashion_shop.service.ApprovalHistoryService;
+import vn.clothing.fashion_shop.service.ApprovalMasterService;
 import vn.clothing.fashion_shop.service.CategoryService;
 import vn.clothing.fashion_shop.service.InventoryService;
 import vn.clothing.fashion_shop.service.InventoryTransactionService;
@@ -43,6 +51,7 @@ import vn.clothing.fashion_shop.service.ProductSkuService;
 import vn.clothing.fashion_shop.service.VariantService;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.InventoryRequest.BaseInventoryRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.VariantRequest.InnerVariantRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.ApprovalHistoryResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductResponse;
 import vn.clothing.fashion_shop.web.rest.errors.EnumError;
@@ -63,6 +72,8 @@ public class ProductServiceImpl implements ProductService{
     private final InventoryService inventoryService;
     private final InventoryTransactionService inventoryTransactionService;
     private final MessageUtil messageUtil;
+    private final ApprovalMasterService approvalMasterService;
+    private final ApprovalHistoryService approvalHistoryService;
     
     @Override
     @Transactional(rollbackFor = ServiceException.class)
@@ -82,7 +93,7 @@ public class ProductServiceImpl implements ProductService{
         final List<Long> skuIdListDelete = productSkuService.findListProductSkuByProductId(product.getId()).stream()
             .map(ProductSku::getId)
             .toList();
-        // Xóa Skus
+        // Xóa Skus chưa có trong tồn kho
         this.productSkuService.deleteProductSkuByListId(skuIdListDelete);
         this.variantService.deleteAllVariantByProductId(product.getId());
         return upSertProduct(product, variants, product.getId());
@@ -145,6 +156,7 @@ public class ProductServiceImpl implements ProductService{
                             .price(v.getPrice())
                             .thumbnail(v.getThumbnail())
                             .product(createdProduct)
+                            .tempStock(v.getStock())
                             .build();
                     newProductSkus.add(newSku);
                 } else {
@@ -194,70 +206,168 @@ public class ProductServiceImpl implements ProductService{
             if (!variantEntities.isEmpty()) {
                 variantService.createListVariant(variantEntities);
             }   
+            List<ApprovalMaster> approvalMasters = this.approvalMasterService.findRawAllApprovalMasterByEntityType("PRODUCT");
             
-            List<BaseInventoryRequest> imports = new ArrayList<>();
-            List<BaseInventoryRequest> adjustment = new ArrayList<>();
-
-            Map<String, Integer> requestedStockBySkuCode = variants.stream()
-                .collect(Collectors.toMap(
-                    v -> SlugUtil.toSlug(v.getSkuId()).toUpperCase(),
-                    v -> v.getStock() == null ? 0 : v.getStock(),
-                    (a, b) -> b
-                ));
+            List<Long> approvalMasterIds = approvalMasters.stream().map(ApprovalMaster::getId).toList();
+            
+            Map<ApprovalMasterEnum, ApprovalMaster> productApprovals = approvalMasters.stream()
+                .filter(a -> "PRODUCT".equalsIgnoreCase(a.getEntityType()))
+                .collect(Collectors.toMap(ApprovalMaster::getStatus, Function.identity(), (a, b) -> a));
 
             if(checkId == null){
-                // Import số lượng sản phẩm tồn kho
-                imports = allSkuMap.values().stream()
-                .filter(s -> {
-                    Integer requested = requestedStockBySkuCode.getOrDefault(s.getSku().toUpperCase(), 0);
-                    return requested != null && requested > 0;
-                })
-                .map(
-                    s -> {
-                        Integer requested = requestedStockBySkuCode.getOrDefault(s.getSku().toUpperCase(), 0);
-                        String message = messageUtil.getMessage("inventory.transaction.import.product",s.getSku(), locale);
-                        return BaseInventoryRequest.builder()
-                            .id(null)
-                            .skuId(s.getId())
-                            .quantity(requested)
-                            .referenceType("IMPORT_PRODUCT") // IMPORT
-                            .referenceId(createdProduct.getId())
-                            .note(message)
-                            .build();
-                    }
-                ).toList();
-            } else{
-                for (ProductSku sku : allSkuMap.values()) {
-                    // int oldStock = skuById.getOrDefault(sku.getId(), sku).getStock() == null ? 0 : skuById.getOrDefault(sku.getId(), sku).getStock();
-                    int delta = requestedStockBySkuCode.getOrDefault(sku.getSku().toUpperCase(), 0);
-                    if (!existingSkuSet.contains(sku.getSku().toUpperCase())) {
-                        String note = messageUtil.getMessage("inventory.transaction.import.product", sku.getSku(), locale);
-                        imports.add(BaseInventoryRequest.builder()
-                            .skuId(sku.getId())
-                            .quantity(delta)
-                            .referenceType("IMPORT_PRODUCT")
-                            .referenceId(createdProduct.getId())
-                            .note(note)
-                            .build());
-                    } else{
-                        String note = messageUtil.getMessage("inventory.transaction.adjustment.product", sku.getSku(), locale);
-                        adjustment.add(BaseInventoryRequest.builder()
-                            .skuId(sku.getId())
-                            .quantity(delta)
-                            .referenceType("ADJUSTMENT_PRODUCT") // UPDATE
-                            .referenceId(createdProduct.getId())
-                            .note(note)
-                            .build());
+                List<ApprovalHistory> approvalHistories = this.approvalHistoryService.findRawAllApprovalHistoryByApprovalMasterIdsAndRequestId(approvalMasterIds, createdProduct.getId(), true);
+                
+                //Kiểm tra trạng thái phê duyệt của sản phẩm
+                if (!approvalHistories.isEmpty()) {
+                    ApprovalHistory lastApprovalHistory = approvalHistories.get(approvalHistories.size() - 1);
+                    ApprovalMasterEnum status = lastApprovalHistory.getApprovalMaster().getStatus();
+                    if (status == ApprovalMasterEnum.PENDING) {
+                        throw new ServiceException(EnumError.PRODUCT_DATA_EXISTED_APPROVAL_PENDING, "product.data.existed.approval.pending", Map.of("name", product.getName()));
+                    } else if (status == ApprovalMasterEnum.APPROVED) {
+                        throw new ServiceException(EnumError.PRODUCT_DATA_EXISTED_NAME, "product.data.duplicate.approval.approved", Map.of("name", product.getName()));
+                    } else if (status == ApprovalMasterEnum.REJECTED) {
+                        throw new ServiceException(EnumError.APPROVAL_MASTER_DATA_STATUS_REJECTED_CANNOT_ADD_HISTORY, "approval.master.data.status.rejected.cannot.add.history", Map.of("name", product.getName()));
+                    } else {
+                        throw new ServiceException(EnumError.PRODUCT_DATA_EXISTED_NAME, "approval.history.exist.requestId", Map.of("name", product.getName()));
                     }
                 }
+                
+                //Kiểm tra tồn kho
+                Integer existingInventory = this.inventoryService.countTotalInventories(createdProduct.getId());
+                if (existingInventory != null && existingInventory > 0) {
+                    throw new ServiceException(EnumError.INVENTORY_DATA_EXISTED_PRODUCT_ID, "inventory.exist.product.id", Map.of("ID", createdProduct.getId()));
+                }
+                if (productApprovals.get(ApprovalMasterEnum.PENDING) == null) {
+                    throw new ServiceException(EnumError.APPROVAL_MASTER_ERR_NOT_FOUND_ENTITY_TYPE_STATUS, "approval.master.not.found.entityType.status", Map.of("entityType", "PRODUCT"));
+                }
+                //Tạo mới quy trình phê duyệt với trạng thái PENDING cho sản phẩm
+                ApprovalHistoryResponse createApprovalHistory = this.approvalHistoryService.createApprovalHistory(
+                    ApprovalHistory.builder()
+                    .approvalMaster(productApprovals.get(ApprovalMasterEnum.PENDING))
+                    .requestId(createdProduct.getId())
+                    .approvedAt(Instant.now())
+                    .build(),
+                    true
+                );
             }
+            else{
+                List<ApprovalHistory> approvalHistories = this.approvalHistoryService.findRawAllApprovalHistoryByApprovalMasterIdsAndRequestId(approvalMasterIds, createdProduct.getId(), true);
 
-            if (!imports.isEmpty()) {
-                inventoryService.importStock(imports, "SYSTEM");
+                ApprovalHistory approvalHistoryToCreate = null;
+
+                if (approvalHistories.isEmpty()) {
+                    // Không có history -> tạo request PENDING
+                    ApprovalMaster pendingMaster = productApprovals.get(ApprovalMasterEnum.PENDING);
+                    if (pendingMaster == null) {
+                        throw new ServiceException(EnumError.APPROVAL_MASTER_ERR_NOT_FOUND_ENTITY_TYPE_STATUS, "approval.master.not.found.entityType.status", Map.of("entityType", "PRODUCT"));
+                    }
+                    approvalHistoryToCreate = ApprovalHistory.builder()
+                        .approvalMaster(pendingMaster)
+                        .requestId(createdProduct.getId())
+                        .approvedAt(Instant.now())
+                        .note("Update old product - create new approval request")
+                        .build();
+                } else {
+                    ApprovalMasterEnum lastStatus = approvalHistories.get(0).getApprovalMaster().getStatus();
+                    switch (lastStatus) {
+                        case PENDING:
+                            // Đang chờ duyệt -> tiếp tục xử lý, không tạo history mới
+                            log.info("[upSertProduct] productId {} has existing approval request in PENDING, continue processing", createdProduct.getId());
+                            break;
+                        case ADJUSTMENT:
+                            // Đang ở trạng thái điều chỉnh -> không tạo history mới, tiếp tục xử lý điều chỉnh
+                            log.info("[upSertProduct] productId {} has ADJUSTMENT status, continue processing", createdProduct.getId());
+                            break;
+                        case APPROVED:
+                            // Đã phê duyệt -> mặc định không tạo history mới (tùy quy trình có thể yêu cầu tạo nếu thay đổi lớn)
+                            log.info("[upSertProduct] productId {} is already APPROVED, continue processing without new approval request", createdProduct.getId());
+                            break;
+                        case REJECTED:
+                            // Bị từ chối -> cần tạo vòng phê duyệt mới (PENDING)
+                            ApprovalMaster pending = productApprovals.get(ApprovalMasterEnum.PENDING);
+                            if (pending == null) {
+                                throw new ServiceException(EnumError.APPROVAL_MASTER_ERR_NOT_FOUND_ENTITY_TYPE_STATUS, "approval.master.not.found.entityType.status", Map.of("entityType", "PRODUCT"));
+                            }
+                            approvalHistoryToCreate = ApprovalHistory.builder()
+                                .approvalMaster(pending)
+                                .requestId(createdProduct.getId())
+                                .approvedAt(Instant.now())
+                                .note("Update product - create new approval request after REJECTED")
+                                .build();
+                            break;
+                        default:
+                            log.info("[upSertProduct] productId {} has approval status {}, continue", createdProduct.getId(), lastStatus);
+                            break;
+                    }
+                }
+
+                if (approvalHistoryToCreate != null) {
+                    this.approvalHistoryService.createApprovalHistory(approvalHistoryToCreate, true);
+                }
             }
-            if (!adjustment.isEmpty()) {
-                inventoryService.adjustmentStock(adjustment, "SYSTEM");
-            }
+            // List<BaseInventoryRequest> imports = new ArrayList<>();
+            // List<BaseInventoryRequest> adjustment = new ArrayList<>();
+
+            // Map<String, Integer> requestedStockBySkuCode = variants.stream()
+            //     .collect(Collectors.toMap(
+            //         v -> SlugUtil.toSlug(v.getSkuId()).toUpperCase(),
+            //         v -> v.getStock() == null ? 0 : v.getStock(),
+            //         (a, b) -> b
+            //     ));
+
+            // if(checkId == null){
+            //     // Import số lượng sản phẩm tồn kho
+            //     imports = allSkuMap.values().stream()
+            //     .filter(s -> {
+            //         Integer requested = requestedStockBySkuCode.getOrDefault(s.getSku().toUpperCase(), 0);
+            //         return requested != null && requested > 0;
+            //     })
+            //     .map(
+            //         s -> {
+            //             Integer requested = requestedStockBySkuCode.getOrDefault(s.getSku().toUpperCase(), 0);
+            //             String message = messageUtil.getMessage("inventory.transaction.import.product",s.getSku(), locale);
+            //             return BaseInventoryRequest.builder()
+            //                 .id(null)
+            //                 .skuId(s.getId())
+            //                 .quantity(requested)
+            //                 .referenceType("IMPORT_PRODUCT") // IMPORT
+            //                 .referenceId(createdProduct.getId())
+            //                 .note(message)
+            //                 .build();
+            //         }
+            //     ).toList();
+            // } else{
+            //     for (ProductSku sku : allSkuMap.values()) {
+            //         // int oldStock = skuById.getOrDefault(sku.getId(), sku).getStock() == null ? 0 : skuById.getOrDefault(sku.getId(), sku).getStock();
+            //         int delta = requestedStockBySkuCode.getOrDefault(sku.getSku().toUpperCase(), 0);
+            //         if (!existingSkuSet.contains(sku.getSku().toUpperCase())) {
+            //             String note = messageUtil.getMessage("inventory.transaction.import.product", sku.getSku(), locale);
+            //             imports.add(BaseInventoryRequest.builder()
+            //                 .skuId(sku.getId())
+            //                 .quantity(delta)
+            //                 .referenceType("IMPORT_PRODUCT")
+            //                 .referenceId(createdProduct.getId())
+            //                 .note(note)
+            //                 .build());
+            //         } else{
+            //             String note = messageUtil.getMessage("inventory.transaction.adjustment.product", sku.getSku(), locale);
+            //             adjustment.add(BaseInventoryRequest.builder()
+            //                 .skuId(sku.getId())
+            //                 .quantity(delta)
+            //                 .referenceType("ADJUSTMENT_PRODUCT") // UPDATE
+            //                 .referenceId(createdProduct.getId())
+            //                 .note(note)
+            //                 .build());
+            //         }
+            //     }
+            // }
+
+            // if (!imports.isEmpty()) {
+            //     inventoryService.importStock(imports, "SYSTEM");
+            // }
+            // if (!adjustment.isEmpty()) {
+            //     inventoryService.adjustmentStock(adjustment, "SYSTEM");
+            // }
             return productMapper.toDto(createdProduct);
         } catch (ServiceException e) {
             throw e;

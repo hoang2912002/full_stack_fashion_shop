@@ -135,6 +135,17 @@ public class ApprovalMasterServiceImpl implements ApprovalMasterService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ApprovalMaster> findRawAllApprovalMasterByEntityType(String entityType) {
+        try {
+            return this.approvalMasterRepository.findAllByEntityType(entityType);
+        } catch (Exception e) {
+            log.error("[findRawAllApprovalMasterByEntityType] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
+
     private ApprovalMasterResponse saveOrUpdate(ApprovalMaster existing, ApprovalMaster approvalMaster) {
         try {
             validateUnique(approvalMaster, existing == null ? null : existing.getId());

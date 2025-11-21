@@ -226,13 +226,25 @@ public class InventoryServiceImpl implements InventoryService {
         throw new UnsupportedOperationException("Unimplemented method 'deleteInventoryById'");
     }
 
-
-    public Inventory findRawInventoryById(Long id){
+    @Override
+    @Transactional(readOnly = true)
+    public Inventory findRawInventoryById(Long id) {
         try {
             Optional<Inventory> inventoryOpt = this.inventoryRepository.findById(id);
             return inventoryOpt.isPresent() ? inventoryOpt.get() : null;
         } catch (Exception e) {
             log.error("[findRawInventoryById] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Integer countTotalInventories(Long productId) {
+        try {
+            return this.inventoryRepository.countByProductId(productId);
+        } catch (Exception e) {
+            log.error("[countTotalInventories] Error: {}", e.getMessage(), e);
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
     }

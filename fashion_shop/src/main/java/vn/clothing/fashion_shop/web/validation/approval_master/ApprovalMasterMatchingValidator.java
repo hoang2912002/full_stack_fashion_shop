@@ -26,7 +26,7 @@ public class ApprovalMasterMatchingValidator implements ConstraintValidator<Appr
         valid &= this.validatorField.checkNotNull(value.getStatus(), "approval.status.notnull", "status", context);
         valid &= this.validatorField.checkNotNull(value.getStep(), "approval.step.notnull", "step", context);
 
-        if(value.isCreate()){
+        if(!value.isCreate()){
             valid &= this.validatorField.checkNotNull(value.getId(), "approval.master.id.notnull", "id", context);
         }
         return valid;

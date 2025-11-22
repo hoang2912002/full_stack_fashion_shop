@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import vn.clothing.fashion_shop.domain.ApprovalHistory;
+import vn.clothing.fashion_shop.domain.Product;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ApprovalHistoryResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 
@@ -19,4 +20,7 @@ public interface ApprovalHistoryService {
     ApprovalHistory findRawApprovalHistoryById(Long id);
     List<ApprovalHistory> findRawAllApprovalHistoryByApprovalMasterId(Long approvalMasterId);
     List<ApprovalHistory> findRawAllApprovalHistoryByApprovalMasterIdsAndRequestId(List<Long> approvalMasterIds, Long requestId, boolean lastApprovalHistoryOnly);
+    void handleApprovalHistoryUpSertProduct(
+        Product product, Long productId // Đây là id để kiểm tra tạo mới hay cập nhật
+    );
 }

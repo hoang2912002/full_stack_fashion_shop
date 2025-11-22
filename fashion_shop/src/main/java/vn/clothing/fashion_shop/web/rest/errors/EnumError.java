@@ -59,13 +59,13 @@ public enum EnumError {
     INVENTORY_ERR_NOT_FOUND_ID("INVENTORY-CATE_NF","Not found inventory with id:",HttpStatus.CONFLICT),
     INVENTORY_DATA_EXISTED_CODE("INVENTORY-DTE-CODE","Inventory already exists with the given Code:",HttpStatus.CONFLICT),
     INVENTORY_DATA_EXISTED_PRODUCT_ID( "INVENTORY-DTE-PRODUCT-ID","Inventory already exists with the given Product ID:",HttpStatus.CONFLICT),
-
+    INVENTORY_ERR_NOT_FOUND_PRODUCT_ID( "INVENTORY-CATE_NF-PRODUCT-ID","Not found inventory with Product ID:",HttpStatus.CONFLICT),
+    INVENTORY_ERR_NOT_UPDATE_STATUS_APPROVED("INVENTORY-ERR-NOT-UPDATE-STATUS-APPROVED","Cannot update inventory when product is in APPROVED status:",HttpStatus.CONFLICT),
     //----------------ApprovalMaster-------------------
     APPROVAL_MASTER_ERR_NOT_FOUND_ID("APPROVAL-MASTER-CATE_NF","Not found approval master with id:",HttpStatus.CONFLICT),
     APPROVAL_MASTER_DATA_EXISTED_ENTITY_TYPE_STATUS_STEP("APPROVAL-MASTER-DTE-ENTITY_TYPE_STATUS_STEP","Approval master already exists with the given EntityType, Status, and Step:",HttpStatus.CONFLICT),
     APPROVAL_MASTER_DATA_STATUS_REJECTED_CANNOT_ADD_HISTORY("APPROVAL-MASTER-DTE-STATUS-REJECTED-CANNOT-ADD-HISTORY","Cannot add approval history to an approval master with REJECTED status:",HttpStatus.CONFLICT),
     APPROVAL_MASTER_ERR_NOT_FOUND_ENTITY_TYPE_STATUS("APPROVAL-MASTER-CATE_NF-ENTITY_TYPE_STATUS","Not found approval master with EntityType and Status:",HttpStatus.CONFLICT),
-    
     //----------------ApprovalHistory-------------------
     APPROVAL_HISTORY_ERR_NOT_FOUND_ID("APPROVAL-HISTORY-CATE_NF","Not found approval history with id:",HttpStatus.CONFLICT),
     

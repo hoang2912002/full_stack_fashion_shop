@@ -26,5 +26,6 @@ public interface InventoryService {
     PaginationResponse getAllInventories(Pageable pageable, Specification specification);
     Integer countTotalInventories(Long productId);
     Inventory findRawInventoryById(Long id);
+    List<Inventory> findRawInventoriesByProductId(Long productId);
     void deleteInventoryById(Long id);
 }

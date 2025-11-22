@@ -248,4 +248,15 @@ public class InventoryServiceImpl implements InventoryService {
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Inventory> findRawInventoriesByProductId(Long productId) {
+        try {
+            return this.inventoryRepository.findAllByProductId(productId);
+        } catch (Exception e) {
+            log.error("[findRawInventoriesByProductId] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
 }

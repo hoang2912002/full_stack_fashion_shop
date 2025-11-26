@@ -17,4 +17,5 @@ public interface ProductService {
     ProductResponse getProductById(Long id);
     List<Product> findListProductById(List<Long> ids);
     Product lockProductById(Long id);
+    Product findRawProductById(Long id);
 }

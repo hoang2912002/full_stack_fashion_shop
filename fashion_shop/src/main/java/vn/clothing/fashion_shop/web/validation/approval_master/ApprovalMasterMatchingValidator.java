@@ -16,15 +16,14 @@ public class ApprovalMasterMatchingValidator implements ConstraintValidator<Appr
     public boolean isValid(ApprovalMasterRequest value, ConstraintValidatorContext context) {
         boolean valid = true;
         if (value == null) {
-            ValidatorField.addViolation(context, "approval.data.notnull", "ApprovalMasterRequest");
+            ValidatorField.addViolation(context, "approval.master.data.notnull", "ApprovalMasterRequest");
             return false;
         }
 
         // --- BASIC FIELDS ---
-        // &= là nếu false thì vẫn chạy tiếp khác với &&
-        valid &= this.validatorField.checkNotBlank(value.getEntityType(), "approval.entityType.notnull", "entityType", context);
-        valid &= this.validatorField.checkNotNull(value.getStatus(), "approval.status.notnull", "status", context);
-        valid &= this.validatorField.checkNotNull(value.getStep(), "approval.step.notnull", "step", context);
+        valid &= this.validatorField.checkNotBlank(value.getEntityType(), "approval.master.entityType.notnull", "entityType", context);
+        valid &= this.validatorField.checkNotNull(value.getStatus(), "approval.master.status.notnull", "status", context);
+        valid &= this.validatorField.checkNotNull(value.getStep(), "approval.master.step.notnull", "step", context);
 
         if(!value.isCreate()){
             valid &= this.validatorField.checkNotNull(value.getId(), "approval.master.id.notnull", "id", context);

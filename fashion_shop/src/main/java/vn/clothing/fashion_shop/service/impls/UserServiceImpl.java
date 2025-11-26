@@ -9,8 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.clothing.fashion_shop.constants.util.ConvertPagination;
@@ -19,6 +19,7 @@ import vn.clothing.fashion_shop.domain.Role;
 import vn.clothing.fashion_shop.domain.User;
 import vn.clothing.fashion_shop.mapper.UserMapper;
 import vn.clothing.fashion_shop.repository.UserRepository;
+import vn.clothing.fashion_shop.security.SecurityUtils;
 import vn.clothing.fashion_shop.service.AddressService;
 import vn.clothing.fashion_shop.service.RoleService;
 import vn.clothing.fashion_shop.service.UserService;
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(rollbackOn= ServiceException.class)
+    @Transactional(rollbackFor = ServiceException.class)
     public UserResponse createUser(User user) {
         try {
             if (handleGetUserByEmail(user.getEmail()) != null) {
@@ -86,13 +87,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = ServiceException.class)
     public User updateRefreshTokenUserByEmail(String refresh_token, String email) {
-        final User user = handleGetUserByEmail(email);
-        if (user == null) {
-            throw new ServiceException(EnumError.USER_DATA_EXISTED_EMAIL, "user.exist.email",Map.of("email", email));
+        try {
+            final User user = handleGetUserByEmail(email);
+            if (user == null) {
+                throw new ServiceException(EnumError.USER_DATA_EXISTED_EMAIL, "user.exist.email",Map.of("email", email));
+            }
+            user.setRefreshToken(refresh_token);
+            return this.userRepository.save(user);
+            
+        } catch (Exception e) {
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
-        user.setRefreshToken(refresh_token);
-        return this.userRepository.save(user);
     }
 
     @Override
@@ -112,7 +119,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(rollbackOn= ServiceException.class)
+    @Transactional(rollbackFor = ServiceException.class)
     public UserResponse updateUser( User user) {
         try {
             final User updateUser = findRawUserById(user.getId());
@@ -143,7 +150,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(rollbackOn= ServiceException.class)
+    @Transactional(rollbackFor = ServiceException.class)
     public PaginationResponse getAllUser(Pageable pageable, Specification<User> spec){
         try {
             Page<User> users = this.userRepository.findAll(spec, pageable);
@@ -158,9 +165,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = ServiceException.class)
     public Void deleteUserById(Long id){
         User user = findRawUserById(id);
         this.userRepository.deleteById(id);
         return null;
+    }
+
+    @Override
+    @Transactional(rollbackFor = ServiceException.class)
+    public User getCurrentUser(){
+        String email = SecurityUtils.getCurrentUserLogin().orElse("");
+
+        User user = this.handleGetUserByEmail(email);
+        if (user == null) {
+            throw new ServiceException(
+                    EnumError.USER_ERR_NOT_FOUND_EMAIL,
+                    "user.account.not.found"
+            );
+        }
+        return user;
     }
 }

@@ -208,7 +208,7 @@ public class ProductServiceImpl implements ProductService{
                 variantService.createListVariant(variantEntities);
             }   
             // 10. Xử lý quy trình phê duyệt
-            this.approvalHistoryService.handleApprovalHistoryUpSertProduct(createdProduct,checkId);
+            this.approvalHistoryService.handleApprovalHistoryUpSertProduct(createdProduct,checkId,ApprovalHistoryServiceImpl.ENTITY_TYPE_PRODUCT);
             return productMapper.toDto(createdProduct);
         } catch (ServiceException e) {
             throw e;
@@ -266,7 +266,7 @@ public class ProductServiceImpl implements ProductService{
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
     }
-    
+    @Override
     @Transactional(readOnly = true)
     public Product findRawProductById(Long id){
         try {

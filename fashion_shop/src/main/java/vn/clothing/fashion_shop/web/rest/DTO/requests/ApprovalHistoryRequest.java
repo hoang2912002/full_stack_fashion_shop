@@ -9,11 +9,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.ApprovalMasterRequest.InnerApprovalMasterRequest;
+import vn.clothing.fashion_shop.web.validation.approval_history.ApprovalHistoryMatching;
 
 @Builder
 @NoArgsConstructor
 @Data
 @AllArgsConstructor
+@ApprovalHistoryMatching
 public class ApprovalHistoryRequest {
     private Long id;
     private Instant approvedAt;
@@ -27,6 +29,7 @@ public class ApprovalHistoryRequest {
     private String updatedBy;
     @JsonProperty("isCreate")
     private boolean isCreate;
+    private String entityType;
 
     @Builder
     @NoArgsConstructor

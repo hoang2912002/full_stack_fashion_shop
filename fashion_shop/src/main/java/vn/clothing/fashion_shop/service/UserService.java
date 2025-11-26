@@ -16,4 +16,5 @@ public interface UserService {
     UserResponse updateUser( User user);
     PaginationResponse getAllUser(Pageable pageable, Specification<User> spec);
     Void deleteUserById(Long id);
+    User getCurrentUser();
 }

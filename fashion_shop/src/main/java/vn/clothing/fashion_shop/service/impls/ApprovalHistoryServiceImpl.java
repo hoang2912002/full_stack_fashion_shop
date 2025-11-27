@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import io.micrometer.common.lang.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.clothing.fashion_shop.constants.enumEntity.ApprovalMasterEnum;
+import vn.clothing.fashion_shop.constants.util.ConvertPagination;
 import vn.clothing.fashion_shop.constants.util.FormatTime;
 import vn.clothing.fashion_shop.domain.ApprovalHistory;
 import vn.clothing.fashion_shop.domain.ApprovalMaster;
@@ -33,6 +35,7 @@ import vn.clothing.fashion_shop.service.InventoryService;
 import vn.clothing.fashion_shop.service.ProductService;
 import vn.clothing.fashion_shop.service.UserService;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ApprovalHistoryResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.ApprovalMasterResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.errors.EnumError;
 import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
@@ -126,15 +129,37 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ApprovalHistoryResponse getApprovalHistoryById(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getApprovalHistoryById'");
+        try {
+            ApprovalHistory approvalHistory = this.findRawApprovalHistoryById(id);
+            if(approvalHistory == null){
+                throw new ServiceException(
+                    EnumError.APPROVAL_HISTORY_ERR_NOT_FOUND_ID,
+                    "approval.history.not.found.id",
+                    Map.of("id", approvalHistory.getId())
+                );
+            }
+            return approvalHistoryMapper.toDto(approvalHistory);
+        } catch (Exception e) {
+            log.error("[getApprovalHistoryById] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PaginationResponse getAllApprovalHistories(Pageable pageable, Specification spec) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllApprovalHistories'");
+        try {
+            Page<ApprovalHistory> approvalHistories = this.approvalHistoryRepository.findAll(spec, pageable);
+            List<ApprovalHistoryResponse> approvalHistoryDTOs = approvalHistories.getContent().stream().map(r -> {
+                return approvalHistoryMapper.toDto(r);
+            }).toList();
+            return ConvertPagination.handleConvert(pageable, approvalHistories, approvalHistoryDTOs);
+        } catch (Exception e) {
+            log.error("[getAllApprovalHistories] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
 
     @Override

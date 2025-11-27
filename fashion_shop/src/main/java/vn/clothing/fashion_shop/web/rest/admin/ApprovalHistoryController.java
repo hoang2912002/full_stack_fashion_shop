@@ -41,12 +41,12 @@ public class ApprovalHistoryController {
     @PostMapping("")
     @ApiMessageResponse("approval.history.success.create")
     public ResponseEntity<ApprovalHistoryResponse> createApprovalHistory(
-        @RequestBody @Valid ApprovalHistoryRequest approvalMasterRequest
+        @RequestBody @Valid ApprovalHistoryRequest approvalHistoryRequest
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.approvalHistoryService.createApprovalHistory(
-            approvalHistoryMapper.toValidator(approvalMasterRequest), 
+            approvalHistoryMapper.toValidator(approvalHistoryRequest), 
             false, 
-            approvalMasterRequest.getEntityType()
+            approvalHistoryRequest.getEntityType()
         ));
     }
     
@@ -55,7 +55,11 @@ public class ApprovalHistoryController {
     public ResponseEntity<ApprovalHistoryResponse> updateApprovalHistory(
         @RequestBody @Valid ApprovalHistoryRequest approvalHistoryRequest
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(this.approvalHistoryService.updateApprovalHistory(
+            approvalHistoryMapper.toValidator(approvalHistoryRequest), 
+            false, 
+            approvalHistoryRequest.getEntityType()
+        ));
     }
 
     @GetMapping("/{id}")

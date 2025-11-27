@@ -68,7 +68,7 @@ public enum EnumError {
     APPROVAL_MASTER_ERR_NOT_FOUND_ENTITY_TYPE_STATUS("APPROVAL-MASTER-CATE_NF-ENTITY_TYPE_STATUS","Not found approval master with EntityType and Status:",HttpStatus.CONFLICT),
     //----------------ApprovalHistory-------------------
     APPROVAL_HISTORY_ERR_NOT_FOUND_ID("APPROVAL-HISTORY-CATE_NF","Not found approval history with id:",HttpStatus.CONFLICT),
-    
+    APPROVAL_HISTORY_CURRENT_ERR_MATCHING("APPROVAL-HISTORY-CURRENT-ERR-MATCHING","Last approval history not matching with current approval history", HttpStatus.CONFLICT),
     //----------------Server-------------------
     INTERNAL_ERROR("ACC-S-999", "Unexpected internal server error", HttpStatus.INTERNAL_SERVER_ERROR)
     ;

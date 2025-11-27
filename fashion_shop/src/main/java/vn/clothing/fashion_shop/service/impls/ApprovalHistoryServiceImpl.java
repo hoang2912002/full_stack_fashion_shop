@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.micrometer.common.lang.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.clothing.fashion_shop.constants.enumEntity.ApprovalMasterEnum;
@@ -49,7 +50,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
     public final static String ENTITY_TYPE_PRODUCT = "PRODUCT";
     public final static String ENTITY_TYPE_INVENTORY = "INVENTORY";
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = ServiceException.class)
     public ApprovalHistoryResponse createApprovalHistory(
         ApprovalHistory approvalHistory,
         boolean skipCheckPeriodDataExist,
@@ -64,7 +65,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
             validateUserPermission(user, approvalMaster);
 
             if (!skipCheckPeriodDataExist) {
-                handleApprovalBusinessRules(approvalHistory, approvalMaster);
+                handleApprovalBusinessRules(approvalHistory, approvalMaster, null);
             }
             Instant approvedAt = Instant.now();
             approvalHistory.setNote(String.format("Create %s - create existing approval request in %s at: %s",
@@ -85,42 +86,37 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
         }
     }
     @Override
-    public ApprovalHistoryResponse updateApprovalHistory(ApprovalHistory approvalHistory, String entityType) {
+    @Transactional(rollbackFor = ServiceException.class)
+    public ApprovalHistoryResponse updateApprovalHistory(ApprovalHistory approvalHistory, boolean skipCheckPeriodDataExist,String entityType) {
         log.info("[updateApprovalHistory] Start update approval history");
         try {
-            String email = SecurityUtils.getCurrentUserLogin().isPresent() ? SecurityUtils.getCurrentUserLogin().get() : "";
-            User user = this.userService.handleGetUserByEmail(email);
-            if (user == null) {
+            //Khóa bản ghi
+            ApprovalHistory uApprovalHistory = this.lockAndGetApprovalHistory(approvalHistory.getId());
+            // ApprovalHistory uApprovalHistory = this.findRawApprovalHistoryById(approvalHistory.getId());
+            if(uApprovalHistory == null){
                 throw new ServiceException(
-                    EnumError.USER_ERR_NOT_FOUND_EMAIL,
-                    "user.account.not.found"
+                        EnumError.APPROVAL_HISTORY_ERR_NOT_FOUND_ID,
+                        "approval.history.not.found.id",
+                        Map.of("id", approvalHistory.getId())
                 );
             }
-            ApprovalMaster approvalMaster = this.approvalMasterService.findRawApprovalMasterById(approvalHistory.getApprovalMaster().getId());
-            ApprovalHistory updateApprovalHistory = this.findRawApprovalHistoryById(approvalHistory.getId());
-            //Kiểm tra tồn tại của Approval Master
-            if(approvalMaster == null){
-                throw new ServiceException(
-                    EnumError.APPROVAL_MASTER_ERR_NOT_FOUND_ID,
-                    "approvalMaster.id.notFound"
-                );
+            User user = this.userService.getCurrentUser();
+            ApprovalMaster approvalMaster = getApprovalMaster(approvalHistory, entityType);
+
+            validateUserPermission(user, approvalMaster);
+            if (!skipCheckPeriodDataExist) {
+                handleApprovalBusinessRules(approvalHistory, approvalMaster, uApprovalHistory);
             }
-            //Kiểm tra quyền của user
-            if(user.getRole().getId() != approvalMaster.getRole().getId()){
-                    
-                throw new ServiceException(
-                    EnumError.PERMISSION_ACCESS_DENIED,
-                    "permission.access.deny"
-                );
-            }
-            if(updateApprovalHistory == null){
-                throw new ServiceException(
-                    EnumError.APPROVAL_HISTORY_ERR_NOT_FOUND_ID,
-                    "approval.history.not.found.id",
-                    Map.of("id", approvalHistory.getId())
-                );
-            }
-            return approvalHistoryMapper.toDto(this.approvalHistoryRepository.save(approvalHistory));            
+
+            Instant approvedAt = Instant.now();
+            uApprovalHistory.setNote(String.format("Update %s - %s with status %s at: %s",
+                entityType.toLowerCase(),
+                approvalHistory.getNote().toLowerCase(), 
+                approvalMaster.getStatus().toString(),
+                FormatTime.formatDateTime(approvedAt)
+            ));
+            uApprovalHistory.setApprovedAt(approvedAt);
+            return approvalHistoryMapper.toDto(this.approvalHistoryRepository.save(uApprovalHistory));            
         } catch (ServiceException e) {
             throw e;
         } catch (Exception e) {
@@ -304,7 +300,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                 this.createApprovalHistory(approvalHistoryToCreate, true, entityType);
             }
             if (approvalHistoryToUpdate != null) {
-                this.updateApprovalHistory(approvalHistoryToUpdate, entityType);
+                this.updateApprovalHistory(approvalHistoryToUpdate, true, entityType);
             }
         } catch(ServiceException e) {
             throw e;
@@ -314,6 +310,16 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
         }
     }
 
+    @Override
+    @Transactional(rollbackFor = ServiceException.class)
+    public ApprovalHistory lockAndGetApprovalHistory(Long id) {
+        try {
+            return this.approvalHistoryRepository.lockApprovalHistoryById(id);
+        } catch (Exception e) {
+            log.error("[lockAndGetApprovalHistory] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
 
     private ApprovalMaster getApprovalMaster(ApprovalHistory approvalHistory, String entityType) {
         try {
@@ -353,7 +359,11 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
         }
     }
 
-    private void handleApprovalBusinessRules(ApprovalHistory approvalHistory, ApprovalMaster master) {
+    private void handleApprovalBusinessRules(
+        ApprovalHistory approvalHistory, 
+        ApprovalMaster master, 
+        ApprovalHistory currentDB // approval history trong db trước khi update
+    ) {
         try {
             ApprovalMasterEnum status = master.getStatus();
             Long requestId = approvalHistory.getRequestId();
@@ -361,14 +371,24 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
             List<ApprovalHistory> historyList =
                     findRawAllApprovalHistoryByRequestId(requestId);
             ApprovalHistory last = historyList.isEmpty() ? null : historyList.getLast();
-            boolean a=  master.getEntityType().equals(ENTITY_TYPE_PRODUCT);
-            switch (master.getEntityType()) {
-                case ENTITY_TYPE_PRODUCT -> handleProductApproval(status, last, requestId);
-                case ENTITY_TYPE_INVENTORY -> handleInventoryApproval(requestId);
-                default -> throw new ServiceException(
-                        EnumError.INTERNAL_ERROR,
-                        "entityType.not.supported"
-                );
+            if(currentDB != null){
+                if(last == null || !Objects.equals(last.getId(), currentDB.getId())){
+                    throw new ServiceException(
+                        EnumError.APPROVAL_HISTORY_CURRENT_ERR_MATCHING,
+                        "approval.history.last.current.not.matching"
+                    );
+                }
+               
+            }
+            else{
+                switch (master.getEntityType()) {
+                    case ENTITY_TYPE_PRODUCT -> handleProductApproval(status, last, requestId);
+                    case ENTITY_TYPE_INVENTORY -> handleInventoryApproval(requestId);
+                    default -> throw new ServiceException(
+                            EnumError.INTERNAL_ERROR,
+                            "entityType.not.supported"
+                    );
+                }
             }
             
         } catch (ServiceException e) {
@@ -406,8 +426,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                 return; // ok
             }
     
-            ApprovalMasterEnum lastStatus = lastHistory.getApprovalMaster().getStatus();
-    
+            ApprovalMasterEnum lastStatus = lastHistory.getApprovalMaster().getStatus();            
             switch (lastStatus) {
                 case PENDING -> {
                     if (status != ApprovalMasterEnum.APPROVED) {

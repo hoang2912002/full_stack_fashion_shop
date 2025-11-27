@@ -12,7 +12,7 @@ import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 
 public interface ApprovalHistoryService {
     ApprovalHistoryResponse createApprovalHistory(ApprovalHistory approvalHistory, boolean skipCheckPeriodDataExist, String entityType);
-    ApprovalHistoryResponse updateApprovalHistory(ApprovalHistory approvalHistory, String entityType);
+    ApprovalHistoryResponse updateApprovalHistory(ApprovalHistory approvalHistory, boolean skipCheckPeriodDataExist, String entityType);
     ApprovalHistoryResponse getApprovalHistoryById(Long id);
     PaginationResponse getAllApprovalHistories(Pageable pageable, Specification spec);
     void deleteApprovalHistory(Long id);
@@ -24,4 +24,5 @@ public interface ApprovalHistoryService {
         Product product, Long productId, // Đây là id để kiểm tra tạo mới hay cập nhật
         String entityType
     );
+    ApprovalHistory lockAndGetApprovalHistory(Long id);
 }

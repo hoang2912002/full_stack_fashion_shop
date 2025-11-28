@@ -48,7 +48,7 @@ public class InventoryRequest {
     @AllArgsConstructor
     public static class BaseInventoryRequest {
         private Long id;
-        private Long skuId;
+        private ProductSkuRequest sku;
         private Integer quantity;
         private String referenceType;
         private Long referenceId;

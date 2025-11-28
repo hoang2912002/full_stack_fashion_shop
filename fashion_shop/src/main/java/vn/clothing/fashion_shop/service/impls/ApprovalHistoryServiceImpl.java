@@ -28,14 +28,13 @@ import vn.clothing.fashion_shop.domain.User;
 import vn.clothing.fashion_shop.mapper.ApprovalHistoryMapper;
 import vn.clothing.fashion_shop.repository.ApprovalHistoryRepository;
 import vn.clothing.fashion_shop.repository.ProductRepository;
-import vn.clothing.fashion_shop.security.SecurityUtils;
 import vn.clothing.fashion_shop.service.ApprovalHistoryService;
 import vn.clothing.fashion_shop.service.ApprovalMasterService;
 import vn.clothing.fashion_shop.service.InventoryService;
 import vn.clothing.fashion_shop.service.ProductService;
+import vn.clothing.fashion_shop.service.ProductSkuService;
 import vn.clothing.fashion_shop.service.UserService;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ApprovalHistoryResponse;
-import vn.clothing.fashion_shop.web.rest.DTO.responses.ApprovalMasterResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.errors.EnumError;
 import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
@@ -50,6 +49,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
     private final InventoryService inventoryService;
     private final UserService userService;
     private final ProductRepository productRepository;
+    private final ProductSkuService productSkuService;
     public final static String ENTITY_TYPE_PRODUCT = "PRODUCT";
     public final static String ENTITY_TYPE_INVENTORY = "INVENTORY";
     @Override
@@ -66,9 +66,10 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
             ApprovalMaster approvalMaster = getApprovalMaster(approvalHistory, entityType);
 
             validateUserPermission(user, approvalMaster);
-
+            Object validatedEntity = null;
             if (!skipCheckPeriodDataExist) {
-                handleApprovalBusinessRules(approvalHistory, approvalMaster, null);
+                // Đây là callback trả về entity của product/inventory(nhớ sau này sửa lại là order)
+                validatedEntity = handleApprovalBusinessRules(approvalHistory, approvalMaster, null);
             }
             Instant approvedAt = Instant.now();
             approvalHistory.setNote(String.format("Create %s - create existing approval request in %s at: %s",
@@ -79,6 +80,14 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
             approvalHistory.setApprovedAt(approvedAt);
             // Save chính history user gửi lên
             ApprovalHistory saved = approvalHistoryRepository.save(approvalHistory);
+            if(validatedEntity instanceof 
+                Product product && approvalMaster.getStatus().equals(ApprovalMasterEnum.APPROVED)
+            ){
+                this.productSkuService.validateAndMapSkusToInventoryRequests(product);
+            }
+            else if(validatedEntity instanceof Inventory && approvalMaster.getStatus().equals(ApprovalMasterEnum.ADJUSTMENT)){
+
+            }
             return approvalHistoryMapper.toDto(saved);
 
         } catch (ServiceException e) {
@@ -303,6 +312,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                                 .approvedAt(Instant.now())
                                 .note("Update product - update existing approval request in FINISHED_ADJUSTMENT at: " + FormatTime.formatDateTime(Instant.now()))
                                 .build();
+                            // Gửi thông báo đến cấp trên duyệt -> APPROVED
                             break;
                         case APPROVED:
                             // Đã phê duyệt -> mặc định không cho chỉnh sửa
@@ -384,7 +394,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
         }
     }
 
-    private void handleApprovalBusinessRules(
+    private Object handleApprovalBusinessRules(
         ApprovalHistory approvalHistory, 
         ApprovalMaster master, 
         ApprovalHistory currentDB // approval history trong db trước khi update
@@ -396,6 +406,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
             List<ApprovalHistory> historyList =
                     findRawAllApprovalHistoryByRequestId(requestId);
             ApprovalHistory last = historyList.isEmpty() ? null : historyList.getLast();
+            // Update ko callback
             if(currentDB != null){
                 if(last == null || !Objects.equals(last.getId(), currentDB.getId())){
                     throw new ServiceException(
@@ -403,18 +414,16 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                         "approval.history.last.current.not.matching"
                     );
                 }
-               
+                return null;
             }
-            else{
-                switch (master.getEntityType()) {
-                    case ENTITY_TYPE_PRODUCT -> handleProductApproval(status, last, requestId);
-                    case ENTITY_TYPE_INVENTORY -> handleInventoryApproval(requestId);
-                    default -> throw new ServiceException(
-                            EnumError.INTERNAL_ERROR,
-                            "entityType.not.supported"
-                    );
-                }
-            }
+            return switch (master.getEntityType()) {
+                case ENTITY_TYPE_PRODUCT -> handleProductApproval(status, last, requestId);
+                case ENTITY_TYPE_INVENTORY -> handleInventoryApproval(requestId);
+                default -> throw new ServiceException(
+                        EnumError.INTERNAL_ERROR,
+                        "entityType.not.supported"
+                );
+            };
             
         } catch (ServiceException e) {
             throw e;
@@ -424,7 +433,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
         }
     }
 
-    private void handleProductApproval(
+    private Product handleProductApproval(
         ApprovalMasterEnum status,
         ApprovalHistory lastHistory,
         Long productId) 
@@ -448,7 +457,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                             Map.of("name", product.getName())
                     );
                 }
-                return; // ok
+                return product; // ok
             }
     
             ApprovalMasterEnum lastStatus = lastHistory.getApprovalMaster().getStatus();            
@@ -481,10 +490,19 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                     }
                 }
                 case NEEDS_ADJUSTMENT -> {
+                    if (status != ApprovalMasterEnum.ADJUSTMENT) {
+                        throw new ServiceException(
+                            EnumError.APPROVAL_MASTER_DATA_STATUS_REJECTED_CANNOT_ADD_HISTORY,
+                            "approval.history.last.needsAdjustment.current.not.adjustment",
+                            Map.of("name", product.getName())
+                        );
+                    }
+                }
+                case ADJUSTMENT -> {
                     if (status != ApprovalMasterEnum.FINISHED_ADJUSTMENT) {
                         throw new ServiceException(
                             EnumError.APPROVAL_MASTER_DATA_STATUS_REJECTED_CANNOT_ADD_HISTORY,
-                            "approval.history.last.needsAdjustment.current.not.finishedAdjustment",
+                            "approval.history.last.adjustment.current.not.finishedAdjustment",
                             Map.of("name", product.getName())
                         );
                     }
@@ -503,7 +521,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                     "approval.history.status.invalid.flow"
                 );
             }
-            
+            return product;
         } catch (ServiceException e) {
             throw e;
         } catch (Exception e) {
@@ -512,7 +530,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
         }
     }
 
-    private void handleInventoryApproval(Long productId) {
+    private Inventory handleInventoryApproval(Long productId) {
         List<Inventory> inventories = inventoryService.findRawInventoriesByProductId(productId);
 
         if (inventories == null || inventories.isEmpty()) {
@@ -522,6 +540,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                     Map.of("id", productId)
             );
         }
+        return inventories.getLast();
     }
 
 

@@ -17,12 +17,15 @@ import lombok.extern.slf4j.Slf4j;
 import vn.clothing.fashion_shop.constants.enumEntity.InventoryTransactionTypeEnum;
 import vn.clothing.fashion_shop.domain.Inventory;
 import vn.clothing.fashion_shop.domain.InventoryTransaction;
+import vn.clothing.fashion_shop.domain.Product;
 import vn.clothing.fashion_shop.domain.ProductSku;
 import vn.clothing.fashion_shop.mapper.InventoryMapper;
+import vn.clothing.fashion_shop.mapper.ProductSkuMapper;
 import vn.clothing.fashion_shop.repository.InventoryRepository;
 import vn.clothing.fashion_shop.service.InventoryService;
 import vn.clothing.fashion_shop.service.InventoryTransactionService;
 import vn.clothing.fashion_shop.service.ProductSkuService;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.ProductSkuRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.InventoryRequest.BaseInventoryRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.InventoryResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
@@ -35,7 +38,8 @@ import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
 public class InventoryServiceImpl implements InventoryService {
     private final InventoryRepository inventoryRepository;
     private final InventoryMapper inventoryMapper;
-    private final ProductSkuService productSkuService;
+    private final ProductSkuMapper productSkuMapper;
+    // private final ProductSkuService productSkuService;
     private final InventoryTransactionService inventoryTransactionService;
     @Override
     @Transactional(readOnly = true)
@@ -84,10 +88,10 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional(rollbackFor = ServiceException.class)
-    public void importStock(List<BaseInventoryRequest> inventories, String operator){
+    public void importStock(List<BaseInventoryRequest> inventories, String operator, Map<Long, Inventory> invMap, Product product){
         log.info("[importStock] start import stock from Inventory ....");
         try {
-            processInventoryChange(inventories, InventoryTransactionTypeEnum.IMPORT, true);
+            processInventoryChange(inventories, InventoryTransactionTypeEnum.IMPORT, true, invMap, product);
         } catch (Exception e) {
             log.error("[importStock] Error: {}", e.getMessage(), e);
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
@@ -96,10 +100,10 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional(rollbackFor = ServiceException.class)
-    public void adjustmentStock(List<BaseInventoryRequest> inventories, String operator){
+    public void adjustmentStock(List<BaseInventoryRequest> inventories, String operator, Map<Long, Inventory> invMap, Product product){
         log.info("[adjustmentStock] start adjustment stock from Inventory ....");
         try {
-            processInventoryChange(inventories, InventoryTransactionTypeEnum.ADJUSTMENT, false);
+            processInventoryChange(inventories, InventoryTransactionTypeEnum.ADJUSTMENT, false, invMap, product);
         } catch (Exception e) {
             log.error("[adjustmentStock] Error: {}", e.getMessage(), e);
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
@@ -109,76 +113,89 @@ public class InventoryServiceImpl implements InventoryService {
     private void processInventoryChange(
         List<BaseInventoryRequest> inventories,
         InventoryTransactionTypeEnum type,
-        boolean allowCreate
+        boolean allowCreate,
+        Map<Long, Inventory> inventoryMap,
+        Product product
     ) {
-        if (inventories == null || inventories.isEmpty()) return;
-
-        List<Long> skuIds = inventories.stream().map(BaseInventoryRequest::getSkuId).toList();
-
-        this.lockInventoryBySkuId(skuIds);
-
-        Map<Long, Inventory> inventoryMap = findRawListInventoryBySku(skuIds)
-            .stream().collect(Collectors.toMap(inv -> inv.getProductSku().getId(), Function.identity()));
-
-        Map<Long, ProductSku> productSkuMap = this.productSkuService.findListProductSkuById(skuIds)
-            .stream().collect(Collectors.toMap(ProductSku::getId, Function.identity()));
-
-        List<Inventory> toSaveInventories = new ArrayList<>();
-        List<InventoryTransaction> toSaveTransactions = new ArrayList<>();
-
-        for (BaseInventoryRequest req : inventories) {
-
-            ProductSku sku = productSkuMap.get(req.getSkuId());
-            if (sku == null) {
-                log.warn("SKU not found: {}", req.getSkuId());
-                continue;
+        try {
+            if (inventories == null || inventories.isEmpty()) return;
+    
+            List<Long> skuIds = inventories.stream().map(i -> i.getSku().getId()).toList();
+    
+            this.lockInventoryBySkuId(skuIds);
+    
+            // Map<Long, ProductSkuRequest> productSkuMap = inventories.stream().collect(Collectors.toMap(i -> i.getSku().getId(), Inventory::getProductSku));
+    
+            List<Inventory> toSaveInventories = new ArrayList<>();
+            List<InventoryTransaction> toSaveTransactions = new ArrayList<>();
+    
+            for (BaseInventoryRequest req : inventories) {
+    
+                ProductSkuRequest sku = req.getSku();
+                if (sku == null) {
+                    log.warn("SKU not found: {}");
+                    continue;
+                }
+    
+                Inventory invDB = inventoryMap.get(req.getSku().getId());
+                if (invDB == null && !allowCreate) {
+                    log.warn("Inventory not found for sku={}, adjustment skipped", req.getSku().getId());
+                    continue;
+                }
+    
+                // Before & After
+                int before = invDB != null && invDB.getQuantityAvailable() != null
+                        ? invDB.getQuantityAvailable()
+                        : 0;
+    
+                int after = before + req.getQuantity();
+                if (after < 0) {
+                    throw new ServiceException(
+                        EnumError.INVENTORY_INVALID_QUANTITY_AVAILABLE,
+                        "inventory.quantityAvailable.notformat",
+                        Map.of("sku", sku.getSku())
+                    );
+                }
+                // Build inventory entity
+                Inventory invEntity = Inventory.builder()
+                    .id(invDB != null ? invDB.getId() : null)
+                    .activated(true)
+                    .product(invDB != null ? invDB.getProduct() : product)
+    
+                    .productSku(productSkuMapper.toValidator(sku))
+                    .quantityAvailable(after)
+                    .quantityReserved(invDB != null ? invDB.getQuantityReserved() : 0)
+                    .quantitySold(invDB != null ? invDB.getQuantitySold() : 0)
+                    .build();
+    
+                toSaveInventories.add(invEntity);
+    
+                // Build transaction
+                InventoryTransaction tx = InventoryTransaction.builder()
+                    .activated(true)
+                    .productSku(productSkuMapper.toValidator(sku))
+                    .beforeQuantity(before)
+                    .afterQuantity(after)
+                    .quantityChange(req.getQuantity())
+                    .type(type)
+                    .referenceType(req.getReferenceType())
+                    .referenceId(req.getReferenceId())
+                    .note(req.getNote())
+                    .build();
+    
+                toSaveTransactions.add(tx);
             }
-
-            Inventory invDB = inventoryMap.get(req.getSkuId());
-            if (invDB == null && !allowCreate) {
-                log.warn("Inventory not found for sku={}, adjustment skipped", req.getSkuId());
-                continue;
-            }
-
-            // Before & After
-            int before = invDB != null && invDB.getQuantityAvailable() != null
-                    ? invDB.getQuantityAvailable()
-                    : 0;
-
-            int after = before + req.getQuantity();
-
-            // Build inventory entity
-            Inventory invEntity = Inventory.builder()
-                .id(invDB != null ? invDB.getId() : null)
-                .activated(true)
-                .product(sku.getProduct())
-                .productSku(sku)
-                .quantityAvailable(after)
-                .quantityReserved(invDB != null ? invDB.getQuantityReserved() : 0)
-                .quantitySold(invDB != null ? invDB.getQuantitySold() : 0)
-                .build();
-
-            toSaveInventories.add(invEntity);
-
-            // Build transaction
-            InventoryTransaction tx = InventoryTransaction.builder()
-                .activated(true)
-                .productSku(sku)
-                .beforeQuantity(before)
-                .afterQuantity(after)
-                .quantityChange(req.getQuantity())
-                .type(type)
-                .referenceType(req.getReferenceType())
-                .referenceId(req.getReferenceId())
-                .note(req.getNote())
-                .build();
-
-            toSaveTransactions.add(tx);
+            
+            // Save
+            this.inventoryRepository.saveAllAndFlush(toSaveInventories);
+            this.inventoryTransactionService.createListInventoryTransaction(toSaveTransactions);
+            
+        } catch (ServiceException e){
+            throw e;
+        } catch (Exception e) {
+            log.error("[adjustmentStock] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
-        
-        // Save
-        this.inventoryRepository.saveAllAndFlush(toSaveInventories);
-        this.inventoryTransactionService.createListInventoryTransaction(toSaveTransactions);
     }
 
     @Override

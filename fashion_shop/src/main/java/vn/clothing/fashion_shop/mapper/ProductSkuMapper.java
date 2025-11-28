@@ -7,6 +7,7 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import vn.clothing.fashion_shop.domain.ProductSku;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.ProductSkuRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductSkuResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductSkuResponse.InnerProductSkuResponse;
 
@@ -22,4 +23,6 @@ public interface ProductSkuMapper extends EntityMapper<ProductSkuResponse, Produ
     InnerProductSkuResponse toMiniDto(ProductSku productSku);
     // Map từ DTO sang Entity
     ProductSku toEntity(ProductSkuResponse dto);
+    ProductSku toValidator(ProductSkuRequest dto);
+    ProductSkuRequest toRequest(ProductSku productSku);
 }

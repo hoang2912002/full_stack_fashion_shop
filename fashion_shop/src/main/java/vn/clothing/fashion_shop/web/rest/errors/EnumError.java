@@ -61,6 +61,7 @@ public enum EnumError {
     INVENTORY_DATA_EXISTED_PRODUCT_ID( "INVENTORY-DTE-PRODUCT-ID","Inventory already exists with the given Product ID:",HttpStatus.CONFLICT),
     INVENTORY_ERR_NOT_FOUND_PRODUCT_ID( "INVENTORY-CATE_NF-PRODUCT-ID","Not found inventory with Product ID:",HttpStatus.CONFLICT),
     INVENTORY_ERR_NOT_UPDATE_STATUS_APPROVED("INVENTORY-ERR-NOT-UPDATE-STATUS-APPROVED","Cannot update inventory when product is in APPROVED status:",HttpStatus.CONFLICT),
+    INVENTORY_INVALID_QUANTITY_AVAILABLE("INVENTORY-INVALID-QUANTITY-AVAILABLE","Inventory quantity available must not be negative number", HttpStatus.CONFLICT),
     //----------------ApprovalMaster-------------------
     APPROVAL_MASTER_ERR_NOT_FOUND_ID("APPROVAL-MASTER-CATE_NF","Not found approval master with id:",HttpStatus.CONFLICT),
     APPROVAL_MASTER_DATA_EXISTED_ENTITY_TYPE_STATUS_STEP("APPROVAL-MASTER-DTE-ENTITY_TYPE_STATUS_STEP","Approval master already exists with the given EntityType, Status, and Step:",HttpStatus.CONFLICT),

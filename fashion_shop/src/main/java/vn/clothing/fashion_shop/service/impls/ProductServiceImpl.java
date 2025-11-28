@@ -72,9 +72,7 @@ public class ProductServiceImpl implements ProductService{
     private final OptionValueMapper optionValueMapper;
     private final OptionValueService optionValueService;
     private final InventoryService inventoryService;
-    private final InventoryTransactionService inventoryTransactionService;
     private final MessageUtil messageUtil;
-    private final ApprovalMasterService approvalMasterService;
     private final ApprovalHistoryService approvalHistoryService;
     
     @Override
@@ -301,49 +299,49 @@ public class ProductServiceImpl implements ProductService{
     }
 
     private void convertInventoryData(List<InnerVariantRequest> variants, Map<String, ProductSku> allSkuMap, Set<String> existingSkuSet, Product createdProduct) {
-        try {
-            Locale locale = LocaleContextHolder.getLocale();
-            List<BaseInventoryRequest> adjustments = new ArrayList<>();
-            List<BaseInventoryRequest> imports = new ArrayList<>();
+        // try {
+        //     Locale locale = LocaleContextHolder.getLocale();
+        //     List<BaseInventoryRequest> adjustments = new ArrayList<>();
+        //     List<BaseInventoryRequest> imports = new ArrayList<>();
     
-            Map<String, Integer> requestedStockBySkuCode = variants.stream()
-                .collect(Collectors.toMap(
-                    v -> SlugUtil.toSlug(v.getSkuId()).toUpperCase(),
-                    v -> v.getStock() == null ? 0 : v.getStock(),
-                    (a, b) -> b
-                ));
-            for (ProductSku sku : allSkuMap.values()) {
-                // int oldStock = skuById.getOrDefault(sku.getId(), sku).getStock() == null ? 0 : skuById.getOrDefault(sku.getId(), sku).getStock();
-                int delta = requestedStockBySkuCode.getOrDefault(sku.getSku().toUpperCase(), 0);
-                if (!existingSkuSet.contains(sku.getSku().toUpperCase())) {
-                    String note = messageUtil.getMessage("inventory.transaction.import.product", sku.getSku(), locale);
-                    imports.add(BaseInventoryRequest.builder()
-                        .skuId(sku.getId())
-                        .quantity(delta)
-                        .referenceType("IMPORT_PRODUCT")
-                        .referenceId(createdProduct.getId())
-                        .note(note)
-                        .build());
-                } else{
-                    String note = messageUtil.getMessage("inventory.transaction.adjustment.product", sku.getSku(), locale);
-                    adjustments.add(BaseInventoryRequest.builder()
-                        .skuId(sku.getId())
-                        .quantity(delta)
-                        .referenceType("ADJUSTMENT_PRODUCT") // UPDATE
-                        .referenceId(createdProduct.getId())
-                        .note(note)
-                        .build());
-                }
-            }
-            if (!imports.isEmpty()) {
-                inventoryService.importStock(imports, "SYSTEM");
-            }
-            if (!adjustments.isEmpty()) {
-                inventoryService.adjustmentStock(adjustments, "SYSTEM");
-            }
-        } catch (Exception e) {
-            log.error("[convertInventoryData] Error: {}", e.getMessage(), e);
-            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
-        }
+        //     Map<String, Integer> requestedStockBySkuCode = variants.stream()
+        //         .collect(Collectors.toMap(
+        //             v -> SlugUtil.toSlug(v.getSkuId()).toUpperCase(),
+        //             v -> v.getStock() == null ? 0 : v.getStock(),
+        //             (a, b) -> b
+        //         ));
+        //     for (ProductSku sku : allSkuMap.values()) {
+        //         // int oldStock = skuById.getOrDefault(sku.getId(), sku).getStock() == null ? 0 : skuById.getOrDefault(sku.getId(), sku).getStock();
+        //         int delta = requestedStockBySkuCode.getOrDefault(sku.getSku().toUpperCase(), 0);
+        //         if (!existingSkuSet.contains(sku.getSku().toUpperCase())) {
+        //             String note = messageUtil.getMessage("inventory.transaction.import.product", sku.getSku(), locale);
+        //             imports.add(BaseInventoryRequest.builder()
+        //                 .skuId(sku.getId())
+        //                 .quantity(delta)
+        //                 .referenceType("IMPORT_PRODUCT")
+        //                 .referenceId(createdProduct.getId())
+        //                 .note(note)
+        //                 .build());
+        //         } else{
+        //             String note = messageUtil.getMessage("inventory.transaction.adjustment.product", sku.getSku(), locale);
+        //             adjustments.add(BaseInventoryRequest.builder()
+        //                 .skuId(sku.getId())
+        //                 .quantity(delta)
+        //                 .referenceType("ADJUSTMENT_PRODUCT") // UPDATE
+        //                 .referenceId(createdProduct.getId())
+        //                 .note(note)
+        //                 .build());
+        //         }
+        //     }
+        //     if (!imports.isEmpty()) {
+        //         inventoryService.importStock(imports, "SYSTEM");
+        //     }
+        //     if (!adjustments.isEmpty()) {
+        //         inventoryService.adjustmentStock(adjustments, "SYSTEM");
+        //     }
+        // } catch (Exception e) {
+        //     log.error("[convertInventoryData] Error: {}", e.getMessage(), e);
+        //     throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        // }
     }    
 }

@@ -5,11 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
-import vn.clothing.fashion_shop.domain.Inventory;
-import vn.clothing.fashion_shop.domain.OrderDetail;
+import vn.clothing.fashion_shop.domain.Product;
 import vn.clothing.fashion_shop.domain.ProductSku;
-import vn.clothing.fashion_shop.repository.ProductSkuRepository;
 
 @Service
 public interface ProductSkuService {
@@ -20,4 +17,5 @@ public interface ProductSkuService {
     List<ProductSku> createListProductSku(List<ProductSku> productSkus);
     void deleteProductSkuById(Long id);
     void deleteProductSkuByListId(List<Long> ids);
+    void validateAndMapSkusToInventoryRequests(Product product);
 }

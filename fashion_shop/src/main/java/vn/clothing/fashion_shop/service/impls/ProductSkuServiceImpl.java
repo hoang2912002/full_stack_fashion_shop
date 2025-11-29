@@ -127,6 +127,7 @@ public class ProductSkuServiceImpl implements ProductSkuService {
     @Transactional(rollbackFor = ServiceException.class)
     public void validateAndMapSkusToInventoryRequests(Product product){
         try {
+            this.productSkuRepository.lockSkuByProduct(product.getId());
             Locale locale = LocaleContextHolder.getLocale();
             List<BaseInventoryRequest> adjustments = new ArrayList<>();
             List<BaseInventoryRequest> imports = new ArrayList<>();

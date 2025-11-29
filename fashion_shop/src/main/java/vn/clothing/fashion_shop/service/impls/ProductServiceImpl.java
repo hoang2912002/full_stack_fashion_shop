@@ -160,8 +160,10 @@ public class ProductServiceImpl implements ProductService{
                     newProductSkus.add(newSku);
                 } else {
                     // UPDATE EXISTING SKU
+                    int tempStock = v.getStock() > 0 ? v.getStock() + sku.getTempStock() : v.getStock();
                     sku.setSku(v.getSkuId().toUpperCase());
                     sku.setPrice(v.getPrice());
+                    sku.setTempStock(tempStock);
                     sku.setThumbnail(v.getThumbnail());
                     newProductSkus.add(sku);
                 }

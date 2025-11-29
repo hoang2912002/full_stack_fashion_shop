@@ -22,9 +22,9 @@ import vn.clothing.fashion_shop.domain.ProductSku;
 import vn.clothing.fashion_shop.mapper.InventoryMapper;
 import vn.clothing.fashion_shop.mapper.ProductSkuMapper;
 import vn.clothing.fashion_shop.repository.InventoryRepository;
+import vn.clothing.fashion_shop.repository.ProductSkuRepository;
 import vn.clothing.fashion_shop.service.InventoryService;
 import vn.clothing.fashion_shop.service.InventoryTransactionService;
-import vn.clothing.fashion_shop.service.ProductSkuService;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.ProductSkuRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.InventoryRequest.BaseInventoryRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.InventoryResponse;
@@ -39,7 +39,7 @@ public class InventoryServiceImpl implements InventoryService {
     private final InventoryRepository inventoryRepository;
     private final InventoryMapper inventoryMapper;
     private final ProductSkuMapper productSkuMapper;
-    // private final ProductSkuService productSkuService;
+    private final ProductSkuRepository productSkuRepository;
     private final InventoryTransactionService inventoryTransactionService;
     @Override
     @Transactional(readOnly = true)
@@ -128,7 +128,7 @@ public class InventoryServiceImpl implements InventoryService {
     
             List<Inventory> toSaveInventories = new ArrayList<>();
             List<InventoryTransaction> toSaveTransactions = new ArrayList<>();
-    
+            List<ProductSku> toSaveProductSku= new ArrayList<>();
             for (BaseInventoryRequest req : inventories) {
     
                 ProductSkuRequest sku = req.getSku();
@@ -137,9 +137,9 @@ public class InventoryServiceImpl implements InventoryService {
                     continue;
                 }
     
-                Inventory invDB = inventoryMap.get(req.getSku().getId());
+                Inventory invDB = inventoryMap.get(sku.getId());
                 if (invDB == null && !allowCreate) {
-                    log.warn("Inventory not found for sku={}, adjustment skipped", req.getSku().getId());
+                    log.warn("Inventory not found for sku={}, adjustment skipped", sku.getId());
                     continue;
                 }
     
@@ -169,7 +169,20 @@ public class InventoryServiceImpl implements InventoryService {
                     .build();
     
                 toSaveInventories.add(invEntity);
-    
+
+                // Update tempStock product sku after change inventory
+                ProductSku productSku = ProductSku.builder()
+                    .id(sku.getId())
+                    .activated(true)
+                    .price(sku.getPrice())
+                    .sku(sku.getSku())
+                    .thumbnail(sku.getThumbnail())
+                    .tempStock(0)
+                    .product(product)
+                    .build();
+                
+                toSaveProductSku.add(productSku);
+
                 // Build transaction
                 InventoryTransaction tx = InventoryTransaction.builder()
                     .activated(true)
@@ -189,7 +202,7 @@ public class InventoryServiceImpl implements InventoryService {
             // Save
             this.inventoryRepository.saveAllAndFlush(toSaveInventories);
             this.inventoryTransactionService.createListInventoryTransaction(toSaveTransactions);
-            
+            this.productSkuRepository.saveAllAndFlush(toSaveProductSku);
         } catch (ServiceException e){
             throw e;
         } catch (Exception e) {

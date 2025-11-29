@@ -6,17 +6,24 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import vn.clothing.fashion_shop.domain.Inventory;
 
 public interface InventoryRepository extends JpaRepository<Inventory, Long>, JpaSpecificationExecutor<Inventory> {
     List<Inventory> findAllByProductSkuIdIn(List<Long> skuIds);
     boolean existsByProductSkuId(Long id);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT i FROM Inventory i WHERE i.productSku.id IN :skuIds")
+    @QueryHints({
+        @QueryHint(name = "javax.persistence.lock.timeout", value = "0") // 0 = fail immediately
+    })
     List<Inventory> lockInventoryBySkuId(@Param("skuIds") List<Long> skuIds);
+
     Integer countByProductId(Long productId);
     List<Inventory> findAllByProductId(Long productId);
 }

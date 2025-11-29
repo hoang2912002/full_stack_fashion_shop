@@ -6,9 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import vn.clothing.fashion_shop.domain.ProductSku;
 
 public interface ProductSkuRepository extends JpaRepository<ProductSku, Long>, JpaSpecificationExecutor<ProductSku> {
@@ -18,5 +20,8 @@ public interface ProductSkuRepository extends JpaRepository<ProductSku, Long>, J
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM ProductSku s WHERE s.product.id = :productId")
+    @QueryHints({
+        @QueryHint(name = "javax.persistence.lock.timeout", value = "0")
+    })
     List<ProductSku> lockSkuByProduct(@Param("productId") Long productId);
 }

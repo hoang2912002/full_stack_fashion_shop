@@ -72,8 +72,10 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                 validatedEntity = handleApprovalBusinessRules(approvalHistory, approvalMaster, null);
             }
             Instant approvedAt = Instant.now();
-            approvalHistory.setNote(String.format("Create %s - create existing approval request in %s at: %s",
+            String note = !approvalHistory.getNote().isBlank() ? approvalHistory.getNote().toLowerCase() : "create existing approval request";
+            approvalHistory.setNote(String.format("Create %s - %s with status %s at: %s",
                 entityType.toLowerCase(),
+                note,
                 approvalMaster.getStatus().toString(),
                 FormatTime.formatDateTime(approvedAt)
             ));
@@ -305,8 +307,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                             break;
                         case ADJUSTMENT:
                             // Đang ở trạng thái điều chỉnh -> không tạo history mới, tiếp tục xử lý điều chỉnh
-                            approvalHistoryToUpdate = ApprovalHistory.builder()
-                                .id(approvalHistories.get(0).getId())
+                            approvalHistoryToCreate = ApprovalHistory.builder()
                                 .approvalMaster(productApprovals.get(ApprovalMasterEnum.FINISHED_ADJUSTMENT))
                                 .requestId(product.getId())
                                 .approvedAt(Instant.now())

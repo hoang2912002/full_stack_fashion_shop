@@ -103,6 +103,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public User findRawUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ServiceException(EnumError.USER_ERR_NOT_FOUND_ID, "user.not.found.id",Map.of("id", id)));

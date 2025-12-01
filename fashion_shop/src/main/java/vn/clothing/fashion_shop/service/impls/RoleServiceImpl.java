@@ -33,7 +33,10 @@ public class RoleServiceImpl implements RoleService{
     private final RoleRepository roleRepository;
     private final PermissionService permissionService;
     private final RoleMapper roleMapper;
-
+    public final static String roleADMIN = "ADMIN";
+    public final static String roleUSER = "USER";
+    public final static String roleSELLER = "SELLER";
+    public final static String roleGUEST = "GUEST";
     @Override
     @Transactional(readOnly = true)
     public Role handleGetRoleById(Long id){

@@ -6,6 +6,7 @@ import java.util.List;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import vn.clothing.fashion_shop.constants.enumEntity.GenderEnum;
@@ -13,6 +14,7 @@ import vn.clothing.fashion_shop.constants.enumEntity.GenderEnum;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class UserResponse {
     private Long id;
     private String fullName;
@@ -29,5 +31,16 @@ public class UserResponse {
     private String createdBy;
     private String updatedBy;
     
-
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class InnerUserResponse {
+        private Long id;
+        private String fullName;
+        private Integer age;
+        private String email;
+        @Enumerated(EnumType.STRING)
+        private GenderEnum gender;
+    }
 }

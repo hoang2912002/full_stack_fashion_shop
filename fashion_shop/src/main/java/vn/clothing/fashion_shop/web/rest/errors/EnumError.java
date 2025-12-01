@@ -70,6 +70,9 @@ public enum EnumError {
     //----------------ApprovalHistory-------------------
     APPROVAL_HISTORY_ERR_NOT_FOUND_ID("APPROVAL-HISTORY-CATE_NF","Not found approval history with id:",HttpStatus.CONFLICT),
     APPROVAL_HISTORY_CURRENT_ERR_MATCHING("APPROVAL-HISTORY-CURRENT-ERR-MATCHING","Last approval history not matching with current approval history", HttpStatus.CONFLICT),
+
+    //----------------ShopManagement-------------------
+    SHOP_MANAGEMENT_DATA_EXISTED_NAME("SHOP-MANAGEMENT-DTE-NAME","Shop management already exists with Name", HttpStatus.CONFLICT),
     //----------------Server-------------------
     INTERNAL_ERROR("ACC-S-999", "Unexpected internal server error", HttpStatus.INTERNAL_SERVER_ERROR)
     ;

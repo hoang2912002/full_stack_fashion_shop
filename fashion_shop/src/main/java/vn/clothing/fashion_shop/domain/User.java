@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -73,4 +74,8 @@ public class User extends AbstractAuditingEntity {
     @OneToMany( mappedBy = "user", fetch = FetchType.LAZY)
     @JsonManagedReference
     List<ApprovalMaster> approvalMasters = new ArrayList<>();
+
+    @OneToMany( mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    List<ShopManagement> shopManagements = new ArrayList<>();
 }

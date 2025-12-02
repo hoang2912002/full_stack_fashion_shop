@@ -145,6 +145,17 @@ public class ApprovalMasterServiceImpl implements ApprovalMasterService {
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
     }
+    @Override
+    @Transactional(readOnly = true)
+    public ApprovalMaster findRawApprovalMasterByEntityTypeAndStatus(String entityType, ApprovalMasterEnum status) {
+        try {
+            Optional<ApprovalMaster> aOptional = this.approvalMasterRepository.findByEntityTypeAndStatus(entityType, status);
+            return aOptional.isPresent() ? aOptional.get() : null;
+        } catch (Exception e) {
+            log.error("[findRawAllApprovalMasterByEntityType] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
 
     private ApprovalMasterResponse saveOrUpdate(ApprovalMaster existing, ApprovalMaster approvalMaster) {
         try {

@@ -18,5 +18,6 @@ public interface ApprovalMasterService {
     void deleteApprovalMasterById(Long id);
     ApprovalMaster findRawApprovalMasterById(Long id);
     ApprovalMaster findApprovalMasterByEntityStatusStep(String entityType, ApprovalMasterEnum status, Integer step, Long id);
+    ApprovalMaster findRawApprovalMasterByEntityTypeAndStatus(String entityType, ApprovalMasterEnum status);
     List<ApprovalMaster> findRawAllApprovalMasterByEntityType(String entityType); 
 }

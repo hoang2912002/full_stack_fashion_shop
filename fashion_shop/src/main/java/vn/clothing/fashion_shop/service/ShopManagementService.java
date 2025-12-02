@@ -13,5 +13,5 @@ public interface ShopManagementService {
     ShopManagementResponse getShopManagementById(Long id);
     PaginationResponse getAllShopManagement(Pageable pageable, Specification specification);
     void deleteShopManagementById(Long id);
-    ShopManagement findShopManagementByName(String name);
+    ShopManagement findShopManagementBySlug(String slug);
 }

@@ -12,6 +12,7 @@ import vn.clothing.fashion_shop.domain.ApprovalMaster;
 
 public interface ApprovalMasterRepository extends JpaRepository<ApprovalMaster, Long>, JpaSpecificationExecutor<ApprovalMaster> {
     Optional<ApprovalMaster> findByEntityTypeAndStatusAndStep(String entityType, ApprovalMasterEnum status, Integer step);
+    Optional<ApprovalMaster> findByEntityTypeAndStatus(String entityType, ApprovalMasterEnum status);
     Optional<ApprovalMaster> findByEntityTypeAndStatusAndStepAndIdNot(String entityType, ApprovalMasterEnum status, Integer step, Long id);
     List<ApprovalMaster> findAllByEntityType(String entityType);
 }

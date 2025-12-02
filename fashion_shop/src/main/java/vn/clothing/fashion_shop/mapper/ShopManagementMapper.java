@@ -9,6 +9,7 @@ import org.mapstruct.factory.Mappers;
 import vn.clothing.fashion_shop.domain.Promotion;
 import vn.clothing.fashion_shop.domain.ShopManagement;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.PromotionRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.ShopManagementRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ShopManagementResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ShopManagementResponse.InnerShopManagementResponse;
 @Mapper(
@@ -28,6 +29,6 @@ public interface ShopManagementMapper extends EntityMapper<ShopManagementRespons
     @Named("toMiniDto")
     InnerShopManagementResponse toMiniDto(ShopManagement shopManagement);
     
-    Promotion toValidator(PromotionRequest dto);
+    ShopManagement toValidator(ShopManagementRequest dto);
     ShopManagement toEntity(ShopManagementResponse dto);
 }

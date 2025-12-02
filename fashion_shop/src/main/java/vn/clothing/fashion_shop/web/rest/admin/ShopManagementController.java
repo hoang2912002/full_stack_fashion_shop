@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import vn.clothing.fashion_shop.constants.annotation.ApiMessageResponse;
 import vn.clothing.fashion_shop.domain.ShopManagement;
 import vn.clothing.fashion_shop.mapper.ShopManagementMapper;
+import vn.clothing.fashion_shop.service.ShopManagementService;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.ShopManagementRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ShopManagementResponse;
@@ -28,12 +29,13 @@ import vn.clothing.fashion_shop.web.rest.DTO.responses.ShopManagementResponse;
 @RequiredArgsConstructor
 public class ShopManagementController {
     private final ShopManagementMapper shopManagementMapper;
+    private final ShopManagementService shopManagementService;
     @PostMapping("")
     @ApiMessageResponse("shop.management.success.create")
     public ResponseEntity<ShopManagementResponse> createShopManagement(
         @RequestBody @Valid ShopManagementRequest shopManagementRequest
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.shopManagementService.createShopManagement(shopManagementMapper.toValidator(shopManagementRequest)));
     }
 
     @PutMapping("")

@@ -1,6 +1,7 @@
 package vn.clothing.fashion_shop.web.rest.DTO.requests;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -8,9 +9,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.UserRequest.InnerUserRequest;
+import vn.clothing.fashion_shop.web.validation.shop_management.ShopManagementMatching;
 @NoArgsConstructor
 @Data
 @AllArgsConstructor
+@ShopManagementMatching
 public class ShopManagementRequest {
     private Long id;
     private String slug;

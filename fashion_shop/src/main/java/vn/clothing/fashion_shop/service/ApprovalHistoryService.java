@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import vn.clothing.fashion_shop.domain.ApprovalHistory;
 import vn.clothing.fashion_shop.domain.Product;
+import vn.clothing.fashion_shop.domain.ShopManagement;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ApprovalHistoryResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
 
@@ -25,4 +26,5 @@ public interface ApprovalHistoryService {
         String entityType
     );
     ApprovalHistory lockAndGetApprovalHistory(Long id);
+    boolean checkApprovalHistoryForUpShop(ShopManagement shopManagement);
 }

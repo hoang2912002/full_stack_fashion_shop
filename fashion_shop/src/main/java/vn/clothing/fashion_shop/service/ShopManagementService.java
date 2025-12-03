@@ -1,5 +1,7 @@
 package vn.clothing.fashion_shop.service;
 
+import java.util.Map;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -13,5 +15,8 @@ public interface ShopManagementService {
     ShopManagementResponse getShopManagementById(Long id);
     PaginationResponse getAllShopManagement(Pageable pageable, Specification specification);
     void deleteShopManagementById(Long id);
-    ShopManagement findShopManagementBySlug(String slug);
+    ShopManagement findRawShopManagementBySlug(String slug, Long id);
+    ShopManagement findRawShopManagementById(Long id);
+    ShopManagement findRawShopManagementByIdForUpdate(Long id);
+    Map<String, Object[]> detectChangedFields(ShopManagement oldData, ShopManagement newData);
 }

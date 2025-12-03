@@ -1,10 +1,13 @@
 package vn.clothing.fashion_shop.service.impls;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,6 +32,7 @@ import vn.clothing.fashion_shop.domain.User;
 import vn.clothing.fashion_shop.mapper.ApprovalHistoryMapper;
 import vn.clothing.fashion_shop.repository.ApprovalHistoryRepository;
 import vn.clothing.fashion_shop.repository.ProductRepository;
+import vn.clothing.fashion_shop.repository.ShopManagementRepository;
 import vn.clothing.fashion_shop.service.ApprovalHistoryService;
 import vn.clothing.fashion_shop.service.ApprovalMasterService;
 import vn.clothing.fashion_shop.service.InventoryService;
@@ -50,6 +54,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
     private final InventoryService inventoryService;
     private final UserService userService;
     private final ProductRepository productRepository;
+    private final ShopManagementRepository shopManagementRepository;
     private final ProductSkuService productSkuService;
     public final static String ENTITY_TYPE_PRODUCT = "PRODUCT";
     public final static String ENTITY_TYPE_INVENTORY = "INVENTORY";
@@ -279,6 +284,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                     .approvalMaster(productApprovals.get(ApprovalMasterEnum.PENDING))
                     .requestId(product.getId())
                     .approvedAt(Instant.now())
+                    .note("create new approval request")
                     .build();
             }
             else{
@@ -293,7 +299,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                         .approvalMaster(pendingMaster)
                         .requestId(product.getId())
                         .approvedAt(Instant.now())
-                        .note("Update old product - create new approval request")
+                        .note("create new approval request")
                         .build();
                 } else {
                     ApprovalMasterEnum lastStatus = approvalHistories.get(0).getApprovalMaster().getStatus();
@@ -305,7 +311,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                                 .approvalMaster(approvalHistories.get(0).getApprovalMaster())
                                 .requestId(product.getId())
                                 .approvedAt(Instant.now())
-                                .note("Update product - update existing approval request in PENDING at: " + FormatTime.formatDateTime(Instant.now()))
+                                .note("update existing approval request" + FormatTime.formatDateTime(Instant.now()))
                                 .build();
                             break;
                         case ADJUSTMENT:
@@ -314,7 +320,7 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
                                 .approvalMaster(productApprovals.get(ApprovalMasterEnum.FINISHED_ADJUSTMENT))
                                 .requestId(product.getId())
                                 .approvedAt(Instant.now())
-                                .note("Update product - update existing approval request in FINISHED_ADJUSTMENT at: " + FormatTime.formatDateTime(Instant.now()))
+                                .note("update existing approval request" + FormatTime.formatDateTime(Instant.now()))
                                 .build();
                             // Gửi thông báo đến cấp trên duyệt -> APPROVED
                             break;
@@ -356,6 +362,45 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
             return this.approvalHistoryRepository.lockApprovalHistoryById(id);
         } catch (Exception e) {
             log.error("[lockAndGetApprovalHistory] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = ServiceException.class)
+    public boolean checkApprovalHistoryForUpShop(ShopManagement shopManagement){
+        try {
+            List<ApprovalMaster> masters = 
+                this.approvalMasterService.findRawAllApprovalMasterByEntityType(ENTITY_TYPE_SHOP_MANAGEMENT);
+            
+            if (masters.isEmpty()) {
+                return true;
+            }
+            
+            List<Long> keys = masters.stream()
+                .map(ApprovalMaster::getId)
+                .toList();
+
+            List<ApprovalHistory> histories = 
+                this.findRawAllApprovalHistoryByApprovalMasterIdsAndRequestId(keys, shopManagement.getId(), false);
+
+            // Lấy history mới nhất theo approved at
+            ApprovalHistory lastHistory =histories.stream()
+            .max(Comparator.comparing(ApprovalHistory::getApprovedAt))
+            .orElse(null);
+
+            ApprovalMaster nextMaster = resolveNextApprovalMaster(lastHistory, masters);
+
+            return this.checkShopManagementUpdatable(
+                lastHistory, 
+                shopManagement,
+                nextMaster
+            );
+            
+        } catch(ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("[checkApprovalHistoryForUpShop] Error: {}", e.getMessage(), e);
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
     }
@@ -551,7 +596,97 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
         ApprovalHistory lastHistory,
         Long shopManagementId
     ){
-        return null;
+        try {
+            ShopManagement shopManagement = shopManagementRepository.findById(shopManagementId).orElse(null);
+        
+            if (shopManagement == null) {
+                throw new ServiceException(
+                        EnumError.SHOP_MANAGEMENT_ERR_NOT_FOUND_ID,
+                        "shop.management.not.found.id",
+                        Map.of("id", shopManagementId)
+                );
+            }
+        
+            
+            if (lastHistory == null) {
+                if (!status.equals(ApprovalMasterEnum.PENDING)) {
+                    throw new ServiceException(
+                            EnumError.APPROVAL_MASTER_DATA_STATUS_REJECTED_CANNOT_ADD_HISTORY,
+                            "approval.history.current.not.pending",
+                            Map.of("name", shopManagement.getName())
+                    );
+                }
+                return shopManagement; // ok
+            }
+            
+            ApprovalMasterEnum lastStatus = lastHistory.getApprovalMaster().getStatus();            
+            switch (lastStatus) {
+                case PENDING -> {
+                    if (status != ApprovalMasterEnum.APPROVED) {
+                        throw new ServiceException(
+                            EnumError.APPROVAL_MASTER_DATA_STATUS_PENDING_CANNOT_ADD_HISTORY,
+                            "product.data.existed.approval.pending",
+                            Map.of("name", shopManagement.getName())
+                        );
+                    }
+                }
+                case APPROVED -> {
+                    if (status != ApprovalMasterEnum.NEEDS_ADJUSTMENT) {
+                        throw new ServiceException(
+                            EnumError.APPROVAL_MASTER_DATA_STATUS_APPROVED_CANNOT_ADD_HISTORY,
+                            "approval.history.last.approved.current.not.needsAdjustment",
+                            Map.of("name", shopManagement.getName())
+                        );
+                    }
+                }
+                case REJECTED -> {
+                    if (status != ApprovalMasterEnum.NEEDS_ADJUSTMENT) {
+                        throw new ServiceException(
+                            EnumError.APPROVAL_MASTER_DATA_STATUS_REJECTED_CANNOT_ADD_HISTORY,
+                            "approval.history.last.rejected.current.not.needsAdjustment",
+                            Map.of("name", shopManagement.getName())
+                        );
+                    }
+                }
+                case NEEDS_ADJUSTMENT -> {
+                    if (status != ApprovalMasterEnum.ADJUSTMENT) {
+                        throw new ServiceException(
+                            EnumError.APPROVAL_MASTER_DATA_STATUS_NEED_ADJUSTMENT_CANNOT_ADD_HISTORY,
+                            "approval.history.last.needsAdjustment.current.not.adjustment",
+                            Map.of("name", shopManagement.getName())
+                        );
+                    }
+                }
+                case ADJUSTMENT -> {
+                    if (status != ApprovalMasterEnum.FINISHED_ADJUSTMENT) {
+                        throw new ServiceException(
+                            EnumError.APPROVAL_MASTER_DATA_STATUS_ADJUSTMENT_CANNOT_ADD_HISTORY,
+                            "approval.history.last.adjustment.current.not.finishedAdjustment",
+                            Map.of("name", shopManagement.getName())
+                        );
+                    }
+                }
+                case FINISHED_ADJUSTMENT -> {
+                    if (status != ApprovalMasterEnum.APPROVED) {
+                        throw new ServiceException(
+                            EnumError.APPROVAL_MASTER_DATA_STATUS_FINISHED_ADJUSTMENT_CANNOT_ADD_HISTORY,
+                            "approval.history.last.finishedAdjustment.current.not.approved",
+                            Map.of("name", shopManagement.getName())
+                        );
+                    }
+                }
+                default -> throw new ServiceException(
+                    EnumError.INTERNAL_ERROR,
+                    "approval.history.status.invalid.flow"
+                );
+            }
+            return shopManagement;
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("[handleProductApproval] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
     private Inventory handleInventoryApproval(Long productId) {
         List<Inventory> inventories = inventoryService.findRawInventoriesByProductId(productId);
@@ -566,5 +701,116 @@ public class ApprovalHistoryServiceImpl implements ApprovalHistoryService {
         return inventories.getLast();
     }
 
+    private ApprovalMaster resolveNextApprovalMaster(ApprovalHistory lastHistory, List<ApprovalMaster> masters) {
 
+        if (lastHistory == null) {
+            // lần đầu → lấy PENDING
+            return masters.stream()
+                    .filter(m -> m.getStatus() == ApprovalMasterEnum.PENDING)
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        ApprovalMasterEnum lastStatus = lastHistory.getApprovalMaster().getStatus();
+
+        return switch (lastStatus) {
+            case PENDING -> lastHistory.getApprovalMaster(); 
+            case ADJUSTMENT -> 
+                masters.stream()
+                    .filter(m -> m.getStatus() == ApprovalMasterEnum.FINISHED_ADJUSTMENT)
+                    .findFirst()
+                    .orElse(null);
+
+            default -> null; 
+        };
+    }
+
+
+    private boolean checkShopManagementUpdatable(ApprovalHistory lastHistory, ShopManagement shop, ApprovalMaster nextMaster) {
+        try {
+            if (lastHistory == null) {
+                ApprovalHistoryResponse create = this.createApprovalHistory(
+                    ApprovalHistory.builder()
+                    .approvalMaster(nextMaster)
+                    .approvedAt(Instant.now())
+                    .requestId(shop.getId())
+                    .note("create new approval request")
+                    .build(),
+                    true,
+                    ENTITY_TYPE_SHOP_MANAGEMENT
+                );
+                return create != null;
+            }
+    
+            ApprovalMasterEnum lastStatus = lastHistory.getApprovalMaster().getStatus();
+    
+            switch (lastStatus) {
+    
+                case PENDING -> {
+                    return true;
+                }
+    
+                case APPROVED -> {
+                    throw new ServiceException(
+                        EnumError.APPROVAL_MASTER_DATA_STATUS_APPROVED_CANNOT_ADD_HISTORY,
+                        "approval.history.current.approved.not.needsAdjustment",
+                        Map.of("name", shop.getName())
+                    );
+                }
+    
+                case REJECTED -> {
+                    throw new ServiceException(
+                        EnumError.APPROVAL_MASTER_DATA_STATUS_REJECTED_CANNOT_ADD_HISTORY,
+                        "approval.history.current.rejected.not.needsAdjustment",
+                        Map.of("name", shop.getName())
+                    );
+                }
+    
+                case NEEDS_ADJUSTMENT -> {
+                    throw new ServiceException(
+                        EnumError.APPROVAL_MASTER_DATA_STATUS_NEED_ADJUSTMENT_CANNOT_ADD_HISTORY,
+                        "approval.history.current.needsAdjustment.not.adjustment",
+                        Map.of("name", shop.getName())
+                    );
+                }
+    
+                case ADJUSTMENT -> {
+                    // người bán đang sửa → cho update
+                    if(nextMaster.getStatus().equals(ApprovalMasterEnum.FINISHED_ADJUSTMENT)){
+                        ApprovalHistoryResponse create = this.createApprovalHistory(
+                            ApprovalHistory.builder()
+                            .approvalMaster(nextMaster)
+                            .approvedAt(Instant.now())
+                            .requestId(shop.getId())
+                            .note("create new approval request")
+                            .build(),
+                            true,
+                            ENTITY_TYPE_SHOP_MANAGEMENT
+                        );
+                    }
+                    return true;
+                }
+    
+                case FINISHED_ADJUSTMENT -> {
+                    // đã chỉnh sửa xong → không cho sửa nữa cho đến khi được duyệt
+                    throw new ServiceException(
+                        EnumError.APPROVAL_MASTER_DATA_STATUS_FINISHED_ADJUSTMENT_CANNOT_ADD_HISTORY,
+                        "approval.history.current.finishedAdjustment.not.approved",
+                        Map.of("name", shop.getName())
+                    );
+                }
+    
+                default -> throw new ServiceException(
+                    EnumError.INTERNAL_ERROR,
+                    "approval.history.status.invalid.flow"
+                );
+            }
+            
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("[handleProductApproval] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
 }

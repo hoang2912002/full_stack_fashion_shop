@@ -66,6 +66,11 @@ public enum EnumError {
     APPROVAL_MASTER_ERR_NOT_FOUND_ID("APPROVAL-MASTER-CATE_NF","Not found approval master with id:",HttpStatus.CONFLICT),
     APPROVAL_MASTER_DATA_EXISTED_ENTITY_TYPE_STATUS_STEP("APPROVAL-MASTER-DTE-ENTITY_TYPE_STATUS_STEP","Approval master already exists with the given EntityType, Status, and Step:",HttpStatus.CONFLICT),
     APPROVAL_MASTER_DATA_STATUS_REJECTED_CANNOT_ADD_HISTORY("APPROVAL-MASTER-DTE-STATUS-REJECTED-CANNOT-ADD-HISTORY","Cannot add approval history to an approval master with REJECTED status:",HttpStatus.CONFLICT),
+    APPROVAL_MASTER_DATA_STATUS_PENDING_CANNOT_ADD_HISTORY("APPROVAL-MASTER-DTE-STATUS-PENDING-CANNOT-ADD-HISTORY","Cannot add approval history to an approval master with PENDING status:",HttpStatus.CONFLICT),
+    APPROVAL_MASTER_DATA_STATUS_APPROVED_CANNOT_ADD_HISTORY("APPROVAL-MASTER-DTE-STATUS-APPROVED-CANNOT-ADD-HISTORY","Cannot add approval history to an approval master with APPROVED status:",HttpStatus.CONFLICT),
+    APPROVAL_MASTER_DATA_STATUS_NEED_ADJUSTMENT_CANNOT_ADD_HISTORY("APPROVAL-MASTER-DTE-STATUS-NEED-ADJUSTMENT-CANNOT-ADD-HISTORY","Cannot add approval history to an approval master with NEED ADJUSTMENT status:",HttpStatus.CONFLICT),
+    APPROVAL_MASTER_DATA_STATUS_ADJUSTMENT_CANNOT_ADD_HISTORY("APPROVAL-MASTER-DTE-STATUS-ADJUSTMENT-CANNOT-ADD-HISTORY","Cannot add approval history to an approval master with ADJUSTMENT status:",HttpStatus.CONFLICT),
+    APPROVAL_MASTER_DATA_STATUS_FINISHED_ADJUSTMENT_CANNOT_ADD_HISTORY("APPROVAL-MASTER-DTE-STATUS-FINISHED-ADJUSTMENT-CANNOT-ADD-HISTORY","Cannot add approval history to an approval master with FINISHED ADJUSTMENT status:",HttpStatus.CONFLICT),
     APPROVAL_MASTER_ERR_NOT_FOUND_ENTITY_TYPE_STATUS("APPROVAL-MASTER-CATE_NF-ENTITY_TYPE_STATUS","Not found approval master with EntityType and Status:",HttpStatus.CONFLICT),
     APPROVAL_MASTER_ERR_NOT_FOUND_ENTITY_STATUS("APPROVAL-MASTER-CATE_NF-ENTITY_STATUS","Not found approval master with EntityType and Status:",HttpStatus.CONFLICT),
     //----------------ApprovalHistory-------------------
@@ -74,6 +79,9 @@ public enum EnumError {
 
     //----------------ShopManagement-------------------
     SHOP_MANAGEMENT_DATA_EXISTED_NAME("SHOP-MANAGEMENT-DTE-NAME","Shop management already exists with Name", HttpStatus.CONFLICT),
+    SHOP_MANAGEMENT_ERR_NOT_FOUND_ID("SHOP-MANAGEMENT-CATE_NF","Not found shop management with id:",HttpStatus.CONFLICT),
+    SHOP_MANAGEMENT_DATA_EXISTED_APPROVAL_PENDING("SHOP-MANAGEMENT-DTE-APPROVAL-PENDING","Shop management already exists with the pending approval request:",HttpStatus.CONFLICT),
+
     //----------------Server-------------------
     INTERNAL_ERROR("ACC-S-999", "Unexpected internal server error", HttpStatus.INTERNAL_SERVER_ERROR)
     ;

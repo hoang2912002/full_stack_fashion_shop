@@ -1,8 +1,12 @@
 package vn.clothing.fashion_shop.service.impls;
 
+import java.lang.reflect.Field;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +44,37 @@ public class ShopManagementServiceImpl implements ShopManagementService{
     private final ApprovalHistoryService approvalHistoryService;
     private final ApprovalMasterService approvalMasterService;
     private final UserService userService;
+
+    public static final Set<String> IMPORTANT_FIELDS = Set.of(
+        "accountName",
+        "accountNumber",
+        "bankBranch",
+        "bankName",
+        "businessDateIssue",
+        "businessLicence",
+        "businessName",
+        "businessNo",
+        "businessType",
+        "businessPlace",
+        "taxCode",
+        "identificationImageFirst",
+        "identificationImageSecond",
+        "name"
+    );
+
+    public static final Set<String> NORMAL_FIELDS = Set.of(
+        "description",
+        "address",
+        "thumbnail",
+        "logo"
+    );
+
+    private static final Set<String> IGNORE_FIELDS = Set.of(
+        "products",
+        "user",
+        "slug"
+    );
+
     
     @Override
     @Transactional(rollbackFor = ServiceException.class)
@@ -54,7 +89,7 @@ public class ShopManagementServiceImpl implements ShopManagementService{
                 "permission.access.deny");
             }
             String slug = SlugUtil.toSlug(shopManagement.getName());
-            ShopManagement smCheckName =  this.findShopManagementBySlug(slug);
+            ShopManagement smCheckName =  this.findRawShopManagementBySlug(slug, null);
             if(smCheckName != null){
                 throw new ServiceException(
                     EnumError.SHOP_MANAGEMENT_DATA_EXISTED_NAME, // add this enum if missing
@@ -88,8 +123,68 @@ public class ShopManagementServiceImpl implements ShopManagementService{
     @Override
     @Transactional(rollbackFor = ServiceException.class)
     public ShopManagementResponse updateShopManagement(ShopManagement shopManagement) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateShopManagement'");
+        log.info("[updateShopManagement] Start create shop management");
+        try {
+            // 1. Lấy khóa WRITE
+            ShopManagement uShopManagement = this.findRawShopManagementByIdForUpdate(shopManagement.getId());
+            if(uShopManagement == null){
+                throw new ServiceException(
+                EnumError.SHOP_MANAGEMENT_ERR_NOT_FOUND_ID, // add this enum if missing
+                "shop.management.not.found.id");
+            }
+            // 2. Kiểm tra quyền user
+            User user = this.userService.findRawUserById(shopManagement.getUser().getId());
+            String userRole = user.getRole().getSlug().toUpperCase();
+            if(!userRole.equals(RoleServiceImpl.roleADMIN) && !userRole.equals(RoleServiceImpl.roleSELLER)){
+                throw new ServiceException(
+                EnumError.PERMISSION_ACCESS_DENIED, // add this enum if missing
+                "permission.access.deny");
+            }
+            // 3. Check slug
+            String slug = SlugUtil.toSlug(shopManagement.getName());
+            if(!slug.equals(uShopManagement.getSlug())){
+                ShopManagement smCheckName =  this.findRawShopManagementBySlug(slug, null);
+                if(smCheckName != null){
+                    throw new ServiceException(
+                        EnumError.SHOP_MANAGEMENT_DATA_EXISTED_NAME, // add this enum if missing
+                        "shop.management.exist.name",
+                        Map.of("name", shopManagement.getName())
+                    );
+                }
+            }
+            // 4. Kiểm tra có field quan trọng thay đổi không
+            Map<String, Object[]> changedFields = detectChangedFields(uShopManagement, shopManagement);
+            
+            boolean isImportantChanged = changedFields.keySet()
+                .stream()
+                .anyMatch(IMPORTANT_FIELDS::contains);
+
+            ShopManagement target = uShopManagement; // entity được update thực tế
+            // 5. Kiểm tra field quan trọng thay đổi
+            if(isImportantChanged){
+                // 5A. Kiểm tra quy trình phê duyệt nếu PENDING thì cho cập nhật hết
+
+                boolean check =  this.approvalHistoryService.checkApprovalHistoryForUpShop(uShopManagement);
+                if(check){
+                    //Java reference semantics
+                    copyAllFields(uShopManagement, shopManagement);
+                    target.setSlug(slug);
+                    target.setUser(user);
+                }
+            } else{
+                // 5B. Nếu ko có field quan trọng update bình thường
+                applyNormalFields(uShopManagement, shopManagement);
+                target.setSlug(slug);
+                target.setUser(user);
+            }
+            ShopManagement saved = shopManagementRepository.saveAndFlush(target);
+            return shopManagementMapper.toDto(saved);
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("[updateShopManagement] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
 
     @Override
@@ -114,9 +209,11 @@ public class ShopManagementServiceImpl implements ShopManagementService{
     
     @Override
     @Transactional(readOnly = true)
-    public ShopManagement findShopManagementBySlug(String slug){
+    public ShopManagement findRawShopManagementBySlug(String slug, Long checkId){
         try {
-            Optional<ShopManagement> opt = this.shopManagementRepository.findBySlug(slug);
+            Optional<ShopManagement> opt = checkId == null 
+                ? this.shopManagementRepository.findBySlug(slug)
+                : this.shopManagementRepository.findBySlugAndIdNot(slug, checkId);
             return opt.isPresent() ? opt.get() : null;
         } catch (ServiceException e) {
             throw e;
@@ -125,4 +222,88 @@ public class ShopManagementServiceImpl implements ShopManagementService{
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ShopManagement findRawShopManagementById(Long id){
+        try {
+            Optional<ShopManagement> opt =  this.shopManagementRepository.findById(id);
+            return opt.isPresent() ? opt.get() : null;
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("[findRawShopManagementById] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public ShopManagement findRawShopManagementByIdForUpdate(Long id){
+        try {
+            Optional<ShopManagement> opt =  this.shopManagementRepository.findByIdForUpdate(id);
+            return opt.isPresent() ? opt.get() : null;
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("[findRawShopManagementById] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+    }
+
+    @Override
+    public Map<String, Object[]> detectChangedFields(ShopManagement oldData, ShopManagement newData) {
+        Map<String, Object[]> changes = new HashMap<>();
+        try {
+            //Field là đối tượng của Reflection API, đại diện cho một thuộc tính (field) trong class, bất kể kiểu dữ liệu là gì: String, Integer, Instant, UUID...
+            //getDeclaredFields() sẽ trả về mảng tất cả các field được khai báo trực tiếp trong class đó, bao gồm cả private, protected, public.
+            for (Field field : ShopManagement.class.getDeclaredFields()) {
+                if(IGNORE_FIELDS.contains(field.getName())){
+                    continue;
+                }
+                field.setAccessible(true);
+                Object oldValue = field.get(oldData);
+                Object newValue = field.get(newData);
+
+                if (!Objects.equals(oldValue, newValue)) {
+                    changes.put(field.getName(), new Object[]{oldValue, newValue});
+                }
+            }
+        } catch (Exception e) {
+            log.error("[detectChangedFields] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
+
+        return changes;
+    }
+
+
+    private void copyAllFields(ShopManagement target, ShopManagement source) {
+        target.setAccountName(source.getAccountName());
+        target.setAccountNumber(source.getAccountNumber());
+        target.setAddress(source.getAddress());
+        target.setBankName(source.getBankName());
+        target.setBankBranch(source.getBankBranch());
+        target.setBusinessDateIssue(source.getBusinessDateIssue());
+        target.setBusinessLicence(source.getBusinessLicence());
+        target.setBusinessName(source.getBusinessName());
+        target.setBusinessNo(source.getBusinessNo());
+        target.setBusinessType(source.getBusinessType());
+        target.setBusinessPlace(source.getBusinessPlace());
+        target.setDescription(source.getDescription());
+        target.setIdentificationImageFirst(source.getIdentificationImageFirst());
+        target.setIdentificationImageSecond(source.getIdentificationImageSecond());
+        target.setLogo(source.getLogo());
+        target.setName(source.getName());
+        target.setTaxCode(source.getTaxCode());
+        target.setThumbnail(source.getThumbnail());
+    }
+
+    private void applyNormalFields(ShopManagement target, ShopManagement source) {
+        target.setDescription(source.getDescription());
+        target.setThumbnail(source.getThumbnail());
+        target.setLogo(source.getLogo());
+        target.setAddress(source.getAddress());
+    }
+
 }

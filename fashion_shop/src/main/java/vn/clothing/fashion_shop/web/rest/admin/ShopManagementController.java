@@ -43,7 +43,7 @@ public class ShopManagementController {
     public ResponseEntity<ShopManagementResponse> updateShopManagement(
         @RequestBody @Valid ShopManagementRequest shopManagementRequest
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(this.shopManagementService.updateShopManagement(shopManagementMapper.toValidator(shopManagementRequest)));
     }
 
     @GetMapping("/{id}")

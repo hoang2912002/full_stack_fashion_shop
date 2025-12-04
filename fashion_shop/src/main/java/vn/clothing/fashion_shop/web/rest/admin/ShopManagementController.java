@@ -51,7 +51,7 @@ public class ShopManagementController {
     public ResponseEntity<ShopManagementResponse> getShopManagementById(
         @PathVariable("id") Long id
     ) {
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(this.shopManagementService.getShopManagementById(id));
     }
 
     @GetMapping("")
@@ -60,7 +60,7 @@ public class ShopManagementController {
         Pageable pageable,
         @Filter Specification<ShopManagement> spec
     ){
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(this.shopManagementService.getAllShopManagement(pageable, spec));
     }
     
     @DeleteMapping("/{id}")

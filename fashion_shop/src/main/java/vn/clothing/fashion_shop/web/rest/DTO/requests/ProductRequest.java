@@ -12,6 +12,7 @@ import vn.clothing.fashion_shop.domain.Category;
 import vn.clothing.fashion_shop.domain.Manufacture;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.CategoryRequest.InnerCategoryRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.ManufactureRequest.InnerManufactureRequest;
+import vn.clothing.fashion_shop.web.rest.DTO.requests.ShopManagementRequest.InnerShopManagementRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.VariantRequest.InnerVariantRequest;
 import vn.clothing.fashion_shop.web.validation.product.ProductMatching;
 @Data
@@ -29,6 +30,7 @@ public class ProductRequest {
     private String description;
     private InnerManufactureRequest manufacture;
     private InnerCategoryRequest category;
+    private InnerShopManagementRequest shopManagement;
     @JsonProperty("isCreate")
     private boolean isCreate;
 

@@ -14,6 +14,7 @@ import vn.clothing.fashion_shop.web.rest.DTO.responses.ManufactureResponse.Inner
 import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionResponse.InnerOptionResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.OptionValueResponse.InnerOptionValueResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ProductSkuResponse.InnerProductSkuResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.ShopManagementResponse.InnerShopManagementResponse;
 @Data
 @Builder
 @NoArgsConstructor
@@ -34,6 +35,7 @@ public class ProductResponse {
 
     private InnerManufactureResponse manufacture;
     private InnerCategoryResponse category;
+    private InnerShopManagementResponse shopManagement;
     private List<InnerProductSkuResponse> productSkus;
     private List<InnerOptionResponse> options;
     private List<InnerOptionValueResponse> optionValues;

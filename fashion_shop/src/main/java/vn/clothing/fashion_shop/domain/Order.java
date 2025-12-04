@@ -47,7 +47,7 @@ public class Order extends AbstractAuditingEntity {
 
     private Integer totalItem;
     private Double totalPrice;       // giá tạm tính
-    private Double discountPrice;    // tổng giảm giá
+    private Double discountPrice;    // tổng giảm giá = coupon + (n * promotion)
     // private Double shippingFee;      
     private Double finalPrice;       // giá phải trả
     private String paymentMethod; // COD, MOMO, BANK

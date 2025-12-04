@@ -36,6 +36,7 @@ import vn.clothing.fashion_shop.domain.Option;
 import vn.clothing.fashion_shop.domain.OptionValue;
 import vn.clothing.fashion_shop.domain.Product;
 import vn.clothing.fashion_shop.domain.ProductSku;
+import vn.clothing.fashion_shop.domain.ShopManagement;
 import vn.clothing.fashion_shop.domain.Variant;
 import vn.clothing.fashion_shop.mapper.OptionMapper;
 import vn.clothing.fashion_shop.mapper.OptionValueMapper;
@@ -50,6 +51,7 @@ import vn.clothing.fashion_shop.service.InventoryTransactionService;
 import vn.clothing.fashion_shop.service.OptionValueService;
 import vn.clothing.fashion_shop.service.ProductService;
 import vn.clothing.fashion_shop.service.ProductSkuService;
+import vn.clothing.fashion_shop.service.ShopManagementService;
 import vn.clothing.fashion_shop.service.VariantService;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.InventoryRequest.BaseInventoryRequest;
 import vn.clothing.fashion_shop.web.rest.DTO.requests.VariantRequest.InnerVariantRequest;
@@ -74,6 +76,7 @@ public class ProductServiceImpl implements ProductService{
     private final InventoryService inventoryService;
     private final MessageUtil messageUtil;
     private final ApprovalHistoryService approvalHistoryService;
+    private final ShopManagementService shopManagementService;
     
     @Override
     @Transactional(rollbackFor = ServiceException.class)
@@ -111,6 +114,15 @@ public class ProductServiceImpl implements ProductService{
                 throw new ServiceException(EnumError.PRODUCT_DATA_EXISTED_NAME, "product.exist.name",Map.of("name", product.getName()));
             }
 
+            final ShopManagement shopManagement = this.shopManagementService.findRawShopManagementById(product.getShopManagement().getId());
+            if(shopManagement == null){
+                throw new ServiceException(
+                    EnumError.SHOP_MANAGEMENT_ERR_NOT_FOUND_ID, // add this enum if missing
+                    "shop.management.not.found.id",
+                    Map.of("shopManagementId", product.getShopManagement().getId())
+                );
+            }
+
             final Category category = Optional.ofNullable(product.getCategory())
             .map(c -> categoryService.findRawCategoryById(c.getId()))
             .orElse(null);
@@ -121,7 +133,7 @@ public class ProductServiceImpl implements ProductService{
 
             product.setSlug(slug);
             product.setCategory(category);
-
+            product.setShopManagement(shopManagement);
             // 3️ Lưu Product chính
             Product createdProduct = productRepository.save(product);
 

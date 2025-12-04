@@ -3,12 +3,14 @@ package vn.clothing.fashion_shop.service.impls;
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.clothing.fashion_shop.constants.enumEntity.ApprovalMasterEnum;
+import vn.clothing.fashion_shop.constants.util.ConvertPagination;
 import vn.clothing.fashion_shop.constants.util.SlugUtil;
 import vn.clothing.fashion_shop.domain.ApprovalHistory;
 import vn.clothing.fashion_shop.domain.ApprovalMaster;
@@ -30,6 +33,7 @@ import vn.clothing.fashion_shop.service.ApprovalMasterService;
 import vn.clothing.fashion_shop.service.ShopManagementService;
 import vn.clothing.fashion_shop.service.UserService;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.PaginationResponse;
+import vn.clothing.fashion_shop.web.rest.DTO.responses.RoleResponse;
 import vn.clothing.fashion_shop.web.rest.DTO.responses.ShopManagementResponse;
 import vn.clothing.fashion_shop.web.rest.errors.EnumError;
 import vn.clothing.fashion_shop.web.rest.errors.ServiceException;
@@ -190,15 +194,39 @@ public class ShopManagementServiceImpl implements ShopManagementService{
     @Override
     @Transactional(rollbackFor = ServiceException.class, readOnly = true)
     public ShopManagementResponse getShopManagementById(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getShopManagementById'");
+        try {
+            ShopManagement shopManagement = this.findRawShopManagementById(id);
+            if(shopManagement == null){
+                throw new ServiceException(
+                    EnumError.SHOP_MANAGEMENT_ERR_NOT_FOUND_ID, // add this enum if missing
+                    "shop.management.not.found.id",
+                    Map.of("id", id)
+                );
+            }
+            return shopManagementMapper.toDto(shopManagement);
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("[getShopManagementById] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
 
     @Override
     @Transactional(rollbackFor = ServiceException.class, readOnly = true)
     public PaginationResponse getAllShopManagement(Pageable pageable, Specification specification) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllShopManagement'");
+        try {
+            Page<ShopManagement> shopManagements = this.shopManagementRepository.findAll(specification, pageable);
+            List<ShopManagementResponse> sManagementResponses = shopManagements.getContent().stream().map(s -> {
+                return shopManagementMapper.toDto(s);
+            }).toList();
+            return ConvertPagination.handleConvert(pageable, shopManagements, sManagementResponses);
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("[findShopManagementBySlug] Error: {}", e.getMessage(), e);
+            throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
+        }
     }
 
     @Override
@@ -246,7 +274,7 @@ public class ShopManagementServiceImpl implements ShopManagementService{
         } catch (ServiceException e) {
             throw e;
         } catch (Exception e) {
-            log.error("[findRawShopManagementById] Error: {}", e.getMessage(), e);
+            log.error("[findRawShopManagementByIdForUpdate] Error: {}", e.getMessage(), e);
             throw new ServiceException(EnumError.INTERNAL_ERROR, "sys.internal.error");
         }
     }
